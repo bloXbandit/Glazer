@@ -87,93 +87,91 @@ function ClientCard({ client, onFollowUp }: { client: Client; onFollowUp: (id: s
     setCalling(false);
   }
 
+  const scoreBg = client.lead_score >= 70 ? '#FFD93D' : client.lead_score >= 45 ? '#C4B5FD' : client.lead_score >= 25 ? '#C4B5FD' : '#FFFDF5';
+  const statusBg: Record<string, string> = { new:'#C4B5FD', contacted:'#FFD93D', quoted:'#C4B5FD', won:'#FFD93D', lost:'#FF6B6B' };
+
   return (
     <Link href={`/clients/${client.id}`}>
-      <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl hover:border-brand-500/40 hover:bg-[#1a1d27] transition-all cursor-pointer group">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            {/* Name + score */}
-            <div className="flex items-center gap-2 mb-1">
-              <p className="font-semibold text-sm text-slate-100 truncate">
-                {client.name ?? 'Unknown'}
-              </p>
-              <span className={`text-xs font-bold ${SCORE_COLOR(client.lead_score)}`}>
-                {client.lead_score_label}
-              </span>
-            </div>
-
-            {/* Phone */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
-              <Phone size={10} className="shrink-0" />
-              <span className="font-mono">{client.phone}</span>
-              <span className="text-slate-600 flex items-center gap-0.5">
-                {CONTACT_ICON(client.contact_type)}
-                {client.contact_type}
-              </span>
-            </div>
-
-            {/* Location + type */}
-            {(client.project_location || client.project_type_raw) && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2">
-                {client.project_location && (
-                  <>
-                    <MapPin size={10} />
-                    <span>{client.project_location}</span>
-                  </>
-                )}
-                {client.project_type_raw && (
-                  <span className="text-slate-600">· {client.project_type_raw}</span>
-                )}
+      <div className="relative group cursor-pointer">
+        {/* Shadow slab */}
+        <div className="absolute inset-0 border-4 border-black translate-x-[4px] translate-y-[4px] bg-[#FFD93D] transition-all duration-150 group-hover:translate-x-[6px] group-hover:translate-y-[6px]" />
+        {/* Card face */}
+        <div className="relative border-4 border-black p-4 bg-white transition-all duration-150 group-hover:-translate-x-[2px] group-hover:-translate-y-[2px]">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              {/* Name + score label */}
+              <div className="flex items-center gap-2 mb-1.5">
+                <p className="font-black text-sm text-black truncate">
+                  {client.name ?? 'Unknown'}
+                </p>
+                <span className="text-[9px] font-black uppercase tracking-widest border border-black px-1.5 py-0.5"
+                  style={{ background: scoreBg }}>
+                  {client.lead_score_label}
+                </span>
               </div>
-            )}
-          </div>
 
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            {/* Status badge */}
-            <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${status.color} ${status.bg} ${status.border}`}>
-              {status.label}
-            </span>
-            {/* Score bar */}
-            <div className="w-16 h-1 bg-[#2a2d3a] rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  client.lead_score >= 70 ? 'bg-emerald-500' :
-                  client.lead_score >= 45 ? 'bg-blue-500' :
-                  client.lead_score >= 25 ? 'bg-purple-500' :
-                  'bg-amber-500'
-                }`}
-                style={{ width: `${client.lead_score}%` }}
-              />
+              {/* Phone */}
+              <div className="flex items-center gap-1.5 text-xs font-medium text-black/60 mb-1">
+                <Phone size={10} strokeWidth={3} className="shrink-0" />
+                <span className="font-mono">{client.phone}</span>
+                <span className="text-black/40 flex items-center gap-0.5">
+                  {CONTACT_ICON(client.contact_type)}
+                  {client.contact_type}
+                </span>
+              </div>
+
+              {/* Location + type */}
+              {(client.project_location || client.project_type_raw) && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-black/50 mb-1">
+                  {client.project_location && (
+                    <><MapPin size={10} strokeWidth={3} /><span>{client.project_location}</span></>
+                  )}
+                  {client.project_type_raw && (
+                    <span className="text-black/40">· {client.project_type_raw}</span>
+                  )}
+                </div>
+              )}
             </div>
-            {/* Follow-up status */}
-            {fuConfig && (
-              <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${fuConfig.color} ${fuConfig.bg}`}>
-                {fuConfig.label}
-              </span>
-            )}
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between text-[10px] text-slate-600 mt-2">
-          <span className="flex items-center gap-1">
-            <Clock size={9} />
-            {relTime}
-          </span>
-          {client.timeline && <span>{client.timeline}</span>}
-          <div className="flex items-center gap-2">
-            {/* Follow-up call button — only for unclosed clients */}
-            {['new', 'contacted'].includes(client.status) && client.follow_up_status !== 'no_interest' && (
-              <button
-                onClick={handleFollowUp}
-                disabled={calling}
-                title="Trigger AI follow-up call"
-                className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 text-blue-400 transition-colors disabled:opacity-40"
-              >
-                <PhoneCall size={9} />
-                {calling ? 'Calling…' : 'Follow Up'}
-              </button>
-            )}
-            <ChevronRight size={11} className="text-slate-700 group-hover:text-brand-400 transition-colors" />
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              {/* Status badge */}
+              <span className="text-[9px] font-black uppercase tracking-widest border-2 border-black px-2 py-0.5"
+                style={{ background: statusBg[client.status] ?? '#FFFDF5' }}>
+                {status.label}
+              </span>
+              {/* Score bar */}
+              <div className="w-16 h-2 border-2 border-black bg-white overflow-hidden">
+                <div className="h-full border-r-2 border-black"
+                  style={{ width:`${client.lead_score}%`, background: scoreBg }} />
+              </div>
+              {fuConfig && (
+                <span className="text-[9px] font-black uppercase tracking-widest border border-black px-1.5 py-0.5 bg-[#FFFDF5]">
+                  {fuConfig.label}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] font-bold text-black/40 mt-2 border-t-2 border-black/10 pt-2">
+            <span className="flex items-center gap-1">
+              <Clock size={9} strokeWidth={3} />{relTime}
+            </span>
+            {client.timeline && <span className="font-black text-black/60">{client.timeline}</span>}
+            <div className="flex items-center gap-2">
+              {['new', 'contacted'].includes(client.status) && client.follow_up_status !== 'no_interest' && (
+                <button
+                  onClick={handleFollowUp}
+                  disabled={calling}
+                  title="Trigger AI follow-up call"
+                  className="flex items-center gap-1 px-2 py-0.5 border-2 border-black font-black text-[9px] uppercase tracking-wide bg-[#C4B5FD] hover:bg-[#FFD93D] transition-colors disabled:opacity-40"
+                  style={{ boxShadow:'1px 1px 0 #000' }}
+                >
+                  <PhoneCall size={9} strokeWidth={3} />
+                  {calling ? 'Calling…' : 'Follow Up'}
+                </button>
+              )}
+              <ChevronRight size={11} strokeWidth={3} className="text-black/30 group-hover:text-black transition-colors" />
+            </div>
           </div>
         </div>
       </div>
@@ -605,16 +603,19 @@ export default function ClientsPage() {
         {/* Stats row */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: 'Total',      value: stats.total,    icon: <User size={11} />,       color: 'text-slate-300' },
-            { label: 'New',        value: stats.newLeads, icon: <Clock size={11} />,       color: 'text-blue-400' },
-            { label: 'High Value', value: stats.highValue,icon: <TrendingUp size={11} />,  color: 'text-emerald-400' },
-            { label: 'Avg Score',  value: stats.avgScore, icon: <Filter size={11} />,      color: 'text-purple-400' },
+            { label: 'Total',      value: stats.total,    icon: <User size={11} strokeWidth={3}/>,      bg: '#FFD93D' },
+            { label: 'New',        value: stats.newLeads, icon: <Clock size={11} strokeWidth={3}/>,     bg: '#C4B5FD' },
+            { label: 'High Value', value: stats.highValue,icon: <TrendingUp size={11} strokeWidth={3}/>, bg: '#FF6B6B' },
+            { label: 'Avg Score',  value: stats.avgScore, icon: <Filter size={11} strokeWidth={3}/>,    bg: '#FFFDF5' },
           ].map(s => (
-            <div key={s.label} className="p-3 bg-[#12141c] border border-[#2a2d3a] rounded-xl text-center">
-              <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
-              <p className="text-[10px] text-slate-600 flex items-center justify-center gap-0.5 mt-0.5">
-                {s.icon}{s.label}
-              </p>
+            <div key={s.label} className="relative">
+              <div className="absolute inset-0 border-2 border-black translate-x-[3px] translate-y-[3px]" style={{ background: s.bg }} />
+              <div className="relative border-2 border-black p-3 bg-white text-center">
+                <p className="text-base font-black text-black">{s.value}</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-black/50 flex items-center justify-center gap-0.5 mt-0.5">
+                  {s.icon}{s.label}
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -622,49 +623,51 @@ export default function ClientsPage() {
         {/* Search + filter */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={12} strokeWidth={3} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search name, phone, location…"
-              className="w-full pl-8 pr-3 py-2 bg-[#12141c] border border-[#2a2d3a] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+              className="neo-input pl-8 text-xs"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="bg-[#12141c] border border-[#2a2d3a] rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-brand-500"
-          >
-            <option value="">All status</option>
-            {Object.entries(STATUS_CONFIG).map(([v, c]) => (
-              <option key={v} value={v}>{c.label}</option>
-            ))}
-            <option value="__followup_due">⚡ Follow-up Due</option>
-          </select>
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              className="neo-select pr-8 text-xs"
+            >
+              <option value="">All status</option>
+              {Object.entries(STATUS_CONFIG).map(([v, c]) => (
+                <option key={v} value={v}>{c.label}</option>
+              ))}
+              <option value="__followup_due">⚡ Follow-up Due</option>
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-black text-xs">▼</span>
+          </div>
         </div>
 
         {/* List */}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-24 bg-[#12141c] border border-[#2a2d3a] rounded-xl animate-pulse" />
+              <div key={i} className="h-24 border-4 border-black bg-white animate-pulse" style={{ boxShadow:'4px 4px 0 #000' }} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <MessageSquare size={28} className="text-slate-700 mx-auto" />
-            <p className="text-sm text-slate-500 font-medium">
+            <MessageSquare size={28} className="text-black/30 mx-auto" />
+            <p className="text-sm font-black uppercase tracking-wide">
               {search || statusFilter ? 'No matching clients' : 'No intake leads yet'}
             </p>
-            <p className="text-xs text-slate-700">
+            <p className="text-xs font-medium text-black/50">
               {!search && !statusFilter && 'Set up call forwarding to your SignalWire number and missed calls will auto-trigger intake.'}
             </p>
             {!search && !statusFilter && (
               <button
                 onClick={() => setShowTrigger(true)}
-                className="mt-2 text-xs text-brand-400 hover:text-brand-300 underline"
-              >
+                className="neo-btn-yellow mt-2 text-xs px-4 py-2">
                 Send a test intake SMS
               </button>
             )}
