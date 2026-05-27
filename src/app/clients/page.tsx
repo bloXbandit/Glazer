@@ -602,19 +602,17 @@ export default function ClientsPage() {
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
         {/* Stats row */}
         <div className="grid grid-cols-4 gap-3">
-          {[
-            { label: 'Total',      value: stats.total,    icon: <User size={11} strokeWidth={3}/>,      bg: '#FFD93D' },
-            { label: 'New',        value: stats.newLeads, icon: <Clock size={11} strokeWidth={3}/>,     bg: '#C4B5FD' },
-            { label: 'High Value', value: stats.highValue,icon: <TrendingUp size={11} strokeWidth={3}/>, bg: '#FF6B6B' },
-            { label: 'Avg Score',  value: stats.avgScore, icon: <Filter size={11} strokeWidth={3}/>,    bg: '#FFFDF5' },
-          ].map(s => (
+          {([
+            { label: 'Total',      value: stats.total,     bg: '#FFD93D' },
+            { label: 'New',        value: stats.newLeads,  bg: '#C4B5FD' },
+            { label: 'High Value', value: stats.highValue, bg: '#FF6B6B' },
+            { label: 'Avg Score',  value: stats.avgScore,  bg: '#FFFDF5' },
+          ]).map(s => (
             <div key={s.label} className="relative">
               <div className="absolute inset-0 border-2 border-black translate-x-[3px] translate-y-[3px]" style={{ background: s.bg }} />
               <div className="relative border-2 border-black p-3 bg-white text-center">
                 <p className="text-base font-black text-black">{s.value}</p>
-                <p className="text-[9px] font-black uppercase tracking-widest text-black/50 flex items-center justify-center gap-0.5 mt-0.5">
-                  {s.icon}{s.label}
-                </p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-black/50 mt-0.5">{s.label}</p>
               </div>
             </div>
           ))}
