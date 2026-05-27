@@ -366,6 +366,153 @@ function TriggerSmsModal({ onClose, onSent }: { onClose: () => void; onSent: () 
   );
 }
 
+// ── Add Client modal ─────────────────────────────────────────
+
+function AddClientModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({
+    name: '', phone: '', email: '', project_location: '',
+    project_type_raw: '', glazing_category: '', approx_size: '',
+    timeline: '', status: 'new', notes: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  async function save() {
+    if (!form.phone.trim()) { setError('Phone number is required.'); return; }
+    setSaving(true); setError('');
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          source: 'manual',
+          contact_type: 'manual',
+          name:             form.name             || null,
+          email:            form.email            || null,
+          project_location: form.project_location || null,
+          project_type_raw: form.project_type_raw || null,
+          glazing_category: form.glazing_category || null,
+          approx_size:      form.approx_size      || null,
+          timeline:         form.timeline         || null,
+          notes:            form.notes            || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? 'Save failed.'); }
+      else { setSuccess(true); onSaved(); setTimeout(() => { onClose(); }, 1200); }
+    } catch { setError('Network error.'); }
+    setSaving(false);
+  }
+
+  const inputCls = 'w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500';
+  const labelCls = 'block text-[10px] text-slate-500 mb-1 uppercase tracking-wide font-medium';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md mx-4 bg-[#12141c] border border-[#2a2d3a] rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+            <User size={14} className="text-brand-400" />
+            Add Client Manually
+          </h2>
+          <button onClick={onClose} className="text-slate-600 hover:text-slate-300"><X size={14} /></button>
+        </div>
+
+        {success ? (
+          <p className="text-sm text-emerald-400 flex items-center gap-2 py-4 justify-center">
+            <CheckCircle2 size={16} /> Client saved!
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Name</label>
+                <input className={inputCls} placeholder="Jane Smith" value={form.name} onChange={e => set('name', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Phone <span className="text-red-400">*</span></label>
+                <input className={inputCls} placeholder="+12025551234" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Email</label>
+                <input className={inputCls} placeholder="jane@example.com" type="email" value={form.email} onChange={e => set('email', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Location</label>
+                <input className={inputCls} placeholder="Baltimore, MD" value={form.project_location} onChange={e => set('project_location', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Project Type</label>
+                <input className={inputCls} placeholder="e.g. Storefront replacement" value={form.project_type_raw} onChange={e => set('project_type_raw', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Glazing Category</label>
+                <select className={inputCls} value={form.glazing_category} onChange={e => set('glazing_category', e.target.value)}>
+                  <option value="">— Select —</option>
+                  <option>Storefront</option>
+                  <option>Curtain Wall</option>
+                  <option>Window Wall</option>
+                  <option>Glass Railing</option>
+                  <option>Skylight</option>
+                  <option>Interior Partition</option>
+                  <option>Fire-Rated</option>
+                  <option>Residential Windows</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Approx. Size</label>
+                <input className={inputCls} placeholder="e.g. 2,000 SF" value={form.approx_size} onChange={e => set('approx_size', e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Timeline</label>
+                <input className={inputCls} placeholder="e.g. Q3 2025" value={form.timeline} onChange={e => set('timeline', e.target.value)} />
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Status</label>
+                <select className={inputCls} value={form.status} onChange={e => set('status', e.target.value)}>
+                  {Object.entries(STATUS_CONFIG).map(([v, c]) => (
+                    <option key={v} value={v}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Notes</label>
+                <textarea
+                  className={`${inputCls} resize-none`}
+                  rows={3}
+                  placeholder="Any additional context…"
+                  value={form.notes}
+                  onChange={e => set('notes', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {error && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle size={11} />{error}</p>}
+
+            <div className="flex gap-2">
+              <button onClick={onClose} className="flex-1 py-2 rounded-lg border border-[#2a2d3a] text-xs text-slate-400 hover:text-slate-200 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="flex-1 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-xs font-semibold text-white transition-colors"
+              >
+                {saving ? 'Saving…' : 'Save Client'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────
 
 export default function ClientsPage() {
@@ -376,6 +523,7 @@ export default function ClientsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [showTrigger, setShowTrigger]   = useState(false);
   const [showUpload, setShowUpload]     = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -443,6 +591,13 @@ export default function ClientsPage() {
           >
             <Upload size={12} />
             Upload CSV
+          </button>
+          <button
+            onClick={() => setShowAddClient(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-brand-500/40 hover:border-brand-500 rounded-lg text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
+          >
+            <User size={12} />
+            Add Client
           </button>
           <button
             onClick={() => setShowTrigger(true)}
@@ -539,6 +694,12 @@ export default function ClientsPage() {
         <TriggerSmsModal
           onClose={() => setShowTrigger(false)}
           onSent={load}
+        />
+      )}
+      {showAddClient && (
+        <AddClientModal
+          onClose={() => setShowAddClient(false)}
+          onSaved={load}
         />
       )}
     </div>
