@@ -231,12 +231,12 @@ export default function HomePage() {
           <div className="flex items-center gap-1 shrink-0">
             <div className="hidden md:flex items-center gap-1">
               <Link href="/procurement"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black font-bold text-xs uppercase tracking-wide hover:bg-[#C4B5FD] transition-all duration-100"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black bg-white text-black font-bold text-xs uppercase tracking-wide hover:bg-[#C4B5FD] transition-all duration-100"
                 style={{ boxShadow:'2px 2px 0 #000' }}>
                 <FileText size={11} strokeWidth={3} /> Procurement
               </Link>
               <Link href="/clients"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black font-bold text-xs uppercase tracking-wide hover:bg-[#C4B5FD] transition-all duration-100"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black bg-white text-black font-bold text-xs uppercase tracking-wide hover:bg-[#C4B5FD] transition-all duration-100"
                 style={{ boxShadow:'2px 2px 0 #000' }}>
                 <Phone size={11} strokeWidth={3} /> Clients
               </Link>
