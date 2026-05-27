@@ -1,0 +1,44 @@
+{
+  "name": "glaze-estimating-platform",
+  "version": "1.0.0",
+  "description": "Commercial glazing estimating platform for DMV market",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "ingest": "tsx scripts/ingest.ts",
+    "ingest:force": "tsx scripts/ingest.ts --force",
+    "ingest:verbose": "tsx scripts/ingest.ts --verbose"
+  },
+  "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/nodemailer": "^8.0.0",
+    "better-sqlite3": "^12.10.0",
+    "clsx": "^2.0.0",
+    "glob": "^10.3.10",
+    "lucide-react": "^0.292.0",
+    "mammoth": "^1.7.2",
+    "next": "^14.2.0",
+    "nodemailer": "^8.0.7",
+    "pdf-parse": "^1.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.52.0",
+    "eslint-config-next": "^14.2.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.2.2"
+  }
+}

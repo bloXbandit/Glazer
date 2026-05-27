@@ -1,0 +1,25 @@
+{
+  "last_run": "2026-05-20T07:16:13.395Z",
+  "total_files_ever_processed": 0,
+  "runs": [
+    {
+      "run_id": "yae8uw1w",
+      "started_at": "2026-05-20T07:16:13.379Z",
+      "completed_at": "2026-05-20T07:16:13.395Z",
+      "forced": false,
+      "files_scanned": 0,
+      "files_processed": 0,
+      "files_skipped_dedup": 0,
+      "files_skipped_unsupported": 0,
+      "files_errored": 0,
+      "new_source_documents": 0,
+      "new_project_records": 0,
+      "updated_project_records": 0,
+      "new_scope_items": 0,
+      "new_pricing_observations": 0,
+      "verified_authority_upgrades": 0,
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}

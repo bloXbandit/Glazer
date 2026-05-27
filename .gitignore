@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# SQLite database
+*.db
+*.db-journal
+data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Native binaries
+*.node
+
+# Misc
+.vercel
+.netlify
