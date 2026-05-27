@@ -6,7 +6,8 @@
 
 import type {
   EstimateInput, EstimateResult, EstimatePacket,
-  EstimateLineItem, MultiplierSummary, AIAdvisorContext, LiveDataFactor
+  EstimateLineItem, MultiplierSummary, AIAdvisorContext, LiveDataFactor,
+  PricingBenchmark
 } from '@/types';
 import { syncRepo } from '@/lib/repository';
 import { calculateConfidence } from '@/lib/confidenceEngine';
@@ -23,14 +24,14 @@ const DEFAULTS = {
   equipment_pct_of_labor: 0.15,
 };
 
-export function runEstimate(input: EstimateInput, liveFactors: LiveDataFactor[] = []): EstimatePacket {
+export function runEstimate(input: EstimateInput, liveFactors: LiveDataFactor[] = [], benchmarkOverride?: PricingBenchmark): EstimatePacket {
   // 1. Resolve data objects
   const workType = syncRepo.getWorkTypeById(input.work_type_id);
   const glassType = syncRepo.getGlassTypeById(input.glass_type_id);
   const region = syncRepo.getRegionById(input.region_id);
   const laborRate = syncRepo.getLaborRateForRegion(input.region_id);
   const productivity = syncRepo.getLaborProductivityForWorkType(input.work_type_id);
-  const benchmark = syncRepo.getBenchmark(input.work_type_id, input.region_id);
+  const benchmark = benchmarkOverride ?? syncRepo.getBenchmark(input.work_type_id, input.region_id);
 
   if (!workType || !glassType || !region || !laborRate || !productivity || !benchmark) {
     throw new Error('Missing required data for estimate calculation. Verify all inputs are selected.');

@@ -313,10 +313,29 @@ export default function ProcurementIngestion({ onIntelligenceSaved }: Procuremen
     }
   }, [rawText, docType, subName, projectName, projectLocation, bidDate]);
 
-  const handleSave = useCallback(() => {
+  const [saveResult, setSaveResult] = useState<{ saved: number; region_id: string; price_per_sf: number } | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleSave = useCallback(async () => {
     if (!result) return;
-    onIntelligenceSaved?.(result);
-    setSaved(true);
+    setSaveError(null);
+    try {
+      const res = await fetch('/api/procurement-intel/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(result),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSaveError(data.error ?? 'Save failed.');
+        return;
+      }
+      setSaveResult(data);
+      setSaved(true);
+      onIntelligenceSaved?.(result);
+    } catch {
+      setSaveError('Network error — could not reach save API.');
+    }
   }, [result, onIntelligenceSaved]);
 
   const handleDownload = useCallback(() => {
@@ -647,6 +666,14 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
           )}
 
           {/* Action bar */}
+          {saveError && (
+            <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 mb-1">{saveError}</p>
+          )}
+          {saveResult && (
+            <p className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 mb-1">
+              ✓ Saved {saveResult.saved} entr{saveResult.saved === 1 ? 'y' : 'ies'} — ${saveResult.price_per_sf}/SF · region: {saveResult.region_id} · benchmark will recalibrate after 3+ entries
+            </p>
+          )}
           <div className="flex items-center gap-2 pt-1">
             <button
               onClick={handleSave}

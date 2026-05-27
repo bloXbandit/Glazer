@@ -114,7 +114,7 @@ export default function HomePage() {
     setError('');
   }, []);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (!canProceedFromStep(step, form)) {
       setError(getStepError(step, form));
       return;
@@ -143,7 +143,15 @@ export default function HomePage() {
           has_blast_security: form.has_blast_security,
           has_acoustic_requirement: form.has_acoustic_requirement,
         };
-        const result = runEstimate(input, liveFactors);
+        let benchmarkOverride: import('@/types').PricingBenchmark | undefined;
+        try {
+          const bmRes = await fetch(`/api/benchmarks?work_type_id=${input.work_type_id}&region_id=${input.region_id}`);
+          if (bmRes.ok) {
+            const bmData = await bmRes.json();
+            if (bmData.calibrated) benchmarkOverride = bmData.benchmark;
+          }
+        } catch { /* fall back to static */ }
+        const result = runEstimate(input, liveFactors, benchmarkOverride);
         setPacket(result);
         setCompletedSteps(prev => Array.from(new Set([...prev, 4, 5])));
         setStep(5);

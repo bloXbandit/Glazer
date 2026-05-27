@@ -71,6 +71,27 @@ function runMigrations(db: Database.Database) {
       created_at   TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS procurement_intel (
+      id              TEXT PRIMARY KEY,
+      work_type_id    TEXT NOT NULL,
+      region_id       TEXT NOT NULL DEFAULT 'national',
+      price_per_sf    REAL NOT NULL,
+      total_sf        REAL,
+      total_price     REAL,
+      price_confidence TEXT NOT NULL DEFAULT 'proposed',
+      document_type   TEXT,
+      subcontractor   TEXT,
+      project_name    TEXT,
+      project_location TEXT,
+      bid_date        TEXT,
+      parse_confidence TEXT,
+      raw_snippet     TEXT,
+      created_at      TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_proc_intel_work_region
+      ON procurement_intel(work_type_id, region_id);
+
     CREATE INDEX IF NOT EXISTS idx_clients_phone      ON clients(phone);
     CREATE INDEX IF NOT EXISTS idx_clients_status     ON clients(status);
     CREATE INDEX IF NOT EXISTS idx_sessions_phone     ON intake_sessions(phone);
