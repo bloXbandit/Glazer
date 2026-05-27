@@ -319,25 +319,26 @@ export default function ProcurementPage() {
   const totalSF = allEntries.reduce((s, e) => s + (e.total_sf_proposed ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#0f1117]">
+    <div className="min-h-screen bg-[#FFFDF5] bg-grid text-black">
       {/* Header */}
-      <header className="border-b border-[#1e2130] bg-[#0d0f16]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="border-b-4 border-black bg-[#FFFDF5]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-300 transition-colors text-xs">
-              <Building size={14} />
-              Estimator
+            <Link href="/" className="font-black text-xs uppercase tracking-widest border-2 border-black px-2 py-1 hover:bg-[#FFD93D] transition-colors"
+              style={{ boxShadow:'2px 2px 0 #000' }}>
+              ← Estimator
             </Link>
-            <span className="text-slate-700">/</span>
             <div className="flex items-center gap-2">
-              <FileText size={14} className="text-brand-400" />
-              <span className="text-sm font-semibold text-slate-100">Procurement Intelligence</span>
+              <div className="w-6 h-6 bg-[#C4B5FD] border-2 border-black flex items-center justify-center">
+                <FileText size={12} strokeWidth={3} />
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest">Procurement Intelligence</span>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-            <span className="text-slate-500 font-medium">{allEntries.length}</span> entries ·{' '}
-            <span className="text-emerald-500 font-medium">{awardedCount}</span> awarded ·{' '}
-            <span className="text-slate-500 font-medium">{totalSF > 0 ? `${(totalSF / 1000).toFixed(0)}k` : '0'}</span> SF
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+            <span className="border-2 border-black px-2 py-0.5 bg-[#FFD93D]">{allEntries.length} entries</span>
+            <span className="border-2 border-black px-2 py-0.5 bg-[#C4B5FD]">{awardedCount} awarded</span>
+            <span className="border-2 border-black px-2 py-0.5">{totalSF > 0 ? `${(totalSF / 1000).toFixed(0)}k` : '0'} SF</span>
           </div>
         </div>
       </header>

@@ -564,47 +564,39 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-slate-200">
+    <div className="min-h-screen bg-[#FFFDF5] bg-grid text-black">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-[#0a0c10]/95 backdrop-blur border-b border-[#1a1d27] px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-20 bg-[#FFFDF5] border-b-4 border-black px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-slate-600 hover:text-slate-400 transition-colors">
+          <Link href="/" className="font-black text-xs uppercase tracking-widest border-2 border-black px-2 py-1 hover:bg-[#FFD93D] transition-colors"
+            style={{ boxShadow:'2px 2px 0 #000' }}>
             ← Back
           </Link>
-          <h1 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-            <Building size={14} className="text-brand-400" />
-            Client Intake
-          </h1>
-          <span className="text-xs text-slate-600">{total} total</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 bg-[#FFD93D] border-2 border-black flex items-center justify-center">
+              <Building size={12} strokeWidth={3} className="text-black" />
+            </div>
+            <h1 className="text-xs font-black uppercase tracking-widest">Client Intake</h1>
+          </div>
+          <span className="text-[10px] font-black border-2 border-black px-1.5 py-0.5 bg-[#C4B5FD]">{total}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={load}
-            disabled={loading}
-            className="p-1.5 rounded-lg border border-[#2a2d3a] text-slate-500 hover:text-slate-300 transition-colors"
-          >
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+          <button onClick={load} disabled={loading}
+            className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-[#FFD93D] transition-colors"
+            style={{ boxShadow:'2px 2px 0 #000' }}>
+            <RefreshCw size={12} strokeWidth={3} className={loading ? 'animate-spin' : ''} />
           </button>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#2a2d3a] hover:border-brand-500/40 rounded-lg text-xs font-medium text-slate-300 hover:text-slate-100 transition-colors"
-          >
-            <Upload size={12} />
-            Upload CSV
+          <button onClick={() => setShowUpload(true)}
+            className="neo-btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <Upload size={12} strokeWidth={3} /> Upload CSV
           </button>
-          <button
-            onClick={() => setShowAddClient(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-brand-500/40 hover:border-brand-500 rounded-lg text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
-          >
-            <User size={12} />
-            Add Client
+          <button onClick={() => setShowAddClient(true)}
+            className="neo-btn-yellow flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <User size={12} strokeWidth={3} /> Add Client
           </button>
-          <button
-            onClick={() => setShowTrigger(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 rounded-lg text-xs font-semibold text-white transition-colors"
-          >
-            <Plus size={12} />
-            Send Intake SMS
+          <button onClick={() => setShowTrigger(true)}
+            className="neo-btn flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <Plus size={12} strokeWidth={3} /> Send Intake SMS
           </button>
         </div>
       </header>

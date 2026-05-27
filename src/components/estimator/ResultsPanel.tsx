@@ -13,41 +13,37 @@ import NarrativePanel from '@/components/estimator/NarrativePanel';
 // ─────────────────────────────────────────────────────────
 function ConfidenceMeter({ confidence }: { confidence: ConfidenceReport }) {
   const [expanded, setExpanded] = useState(false);
-  const color = confidence.level === 'High' ? 'emerald' : confidence.level === 'Medium' ? 'amber' : 'red';
-  const colorMap = { emerald: '#16a34a', amber: '#d97706', red: '#dc2626' };
+  const colorBg = confidence.level === 'High' ? '#FFD93D' : confidence.level === 'Medium' ? '#C4B5FD' : '#FF6B6B';
 
   return (
-    <div className="card p-4">
+    <div className="border-4 border-black p-4 bg-white" style={{ boxShadow:'6px 6px 0 #000' }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidence Score</p>
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
-          confidence.level === 'High'   ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-          confidence.level === 'Medium' ? 'bg-amber-50   text-amber-700   border-amber-200'   :
-                                          'bg-red-50     text-red-700     border-red-200'
-        }`}>{confidence.level}</span>
+        <p className="text-[10px] font-black uppercase tracking-widest">Confidence</p>
+        <span className="text-[10px] font-black border-2 border-black px-2 py-0.5"
+          style={{ background: colorBg }}>{confidence.level}</span>
       </div>
-      <div className="relative h-1.5 bg-[#f0ede8] rounded-full mb-2 overflow-hidden">
-        <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-          style={{ width: `${confidence.score}%`, backgroundColor: colorMap[color] }} />
+      <div className="relative h-3 border-2 border-black mb-3 bg-white overflow-hidden">
+        <div className="absolute inset-y-0 left-0 border-r-2 border-black transition-all duration-700"
+          style={{ width:`${confidence.score}%`, background: colorBg }} />
       </div>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-2xl font-black tabular-nums" style={{ color: colorMap[color] }}>{confidence.score}</span>
-        <span className="text-xs text-slate-400">/ 100</span>
-        <button onClick={() => setExpanded(!expanded)} className="text-xs text-slate-400 hover:text-[#111] flex items-center gap-1 transition-colors font-bold">
-          Details {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-2xl font-black tabular-nums">{confidence.score}<span className="text-sm font-bold text-black/40">/100</span></span>
+        <button onClick={() => setExpanded(!expanded)}
+          className="text-[10px] font-black uppercase tracking-widest border-2 border-black px-2 py-0.5 hover:bg-[#FFD93D] transition-colors flex items-center gap-1">
+          Details {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
         </button>
       </div>
-      <p className="text-xs text-slate-500 leading-relaxed">{confidence.summary}</p>
+      <p className="text-xs font-medium text-black/60 leading-relaxed">{confidence.summary}</p>
       {expanded && (
-        <div className="mt-3 space-y-1.5 border-t border-[#e2ddd6] pt-3">
+        <div className="mt-3 space-y-1.5 border-t-2 border-black pt-3">
           {confidence.factors.map((f, i) => (
-            <div key={i} className="flex items-start gap-2 text-xs">
-              <span className={`mt-0.5 flex-shrink-0 ${f.satisfied ? 'text-emerald-600' : 'text-slate-300'}`}>
-                {f.satisfied ? <CheckCircle2 size={12} /> : <Minus size={12} />}
+            <div key={i} className="flex items-start gap-2 text-xs font-medium">
+              <span className={`mt-0.5 flex-shrink-0 ${f.satisfied ? 'text-black' : 'text-black/20'}`}>
+                {f.satisfied ? <CheckCircle2 size={12} strokeWidth={3} /> : <Minus size={12} strokeWidth={3} />}
               </span>
               <div>
-                <span className={f.satisfied ? 'text-slate-700' : 'text-slate-400'}>{f.label}</span>
-                <span className="text-slate-400 ml-1">— {f.note}</span>
+                <span className={f.satisfied ? 'text-black' : 'text-black/40'}>{f.label}</span>
+                <span className="text-black/40 ml-1">— {f.note}</span>
               </div>
             </div>
           ))}
@@ -60,47 +56,39 @@ function ConfidenceMeter({ confidence }: { confidence: ConfidenceReport }) {
 // ─────────────────────────────────────────────────────────
 // Market Position Gauge
 // ─────────────────────────────────────────────────────────
+const MARKET_STYLE: Record<string, { bg: string; icon: ReactNode }> = {
+  'Below Market':            { bg:'#FF6B6B', icon:<TrendingDown size={14} strokeWidth={3}/> },
+  'Competitive':             { bg:'#FFD93D', icon:<Minus size={14} strokeWidth={3}/> },
+  'Premium':                 { bg:'#C4B5FD', icon:<TrendingUp size={14} strokeWidth={3}/> },
+  'High Risk / Over Market': { bg:'#FF6B6B', icon:<AlertTriangle size={14} strokeWidth={3}/> },
+};
+
 function MarketGauge({ result }: { result: EstimateResult }) {
-  const positions = [
-    { id: 'Below Market',          color: 'text-red-700     bg-red-50     border-red-200',     icon: <TrendingDown size={14} /> },
-    { id: 'Competitive',           color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: <Minus size={14} /> },
-    { id: 'Premium',               color: 'text-blue-700    bg-blue-50    border-blue-200',    icon: <TrendingUp size={14} /> },
-    { id: 'High Risk / Over Market', color: 'text-amber-700 bg-amber-50  border-amber-200',   icon: <AlertTriangle size={14} /> },
-  ];
-  const active = positions.find(p => p.id === result.market_position) ?? positions[1];
+  const style = MARKET_STYLE[result.market_position] ?? MARKET_STYLE['Competitive'];
+  const pct = Math.min(100, Math.max(0,
+    ((result.effective_per_sf - result.benchmark_low) / Math.max(1, result.benchmark_high - result.benchmark_low)) * 100
+  ));
 
   return (
-    <div className="card p-4">
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Market Position</p>
-      <div className={`flex items-center gap-2 px-3 py-2 rounded border mb-3 font-bold text-sm ${active.color}`}>
-        {active.icon}
-        <span>{result.market_position}</span>
+    <div className="border-4 border-black p-4 bg-white" style={{ boxShadow:'6px 6px 0 #000' }}>
+      <p className="text-[10px] font-black uppercase tracking-widest mb-3">Market Position</p>
+      <div className="flex items-center gap-2 border-2 border-black px-3 py-2 mb-3 font-black text-sm"
+        style={{ background: style.bg }}>
+        {style.icon}<span className="uppercase tracking-wide">{result.market_position}</span>
       </div>
       <div className="space-y-1">
-        <div className="flex justify-between text-[10px] text-slate-400 uppercase tracking-wider font-bold">
-          <span>Low</span><span>Mid</span><span>High</span>
+        <div className="relative h-3 border-2 border-black bg-white overflow-visible">
+          <div className="absolute inset-y-0 left-0 bg-black/10 border-r-2 border-black" style={{ width:`${pct}%` }} />
+          <div className="absolute top-1/2 -translate-y-1/2 w-2 h-5 bg-black z-10"
+            style={{ left:`calc(${pct}% - 4px)` }} />
         </div>
-        <div className="relative h-2.5 bg-gradient-to-r from-emerald-200 via-brand-200 to-amber-200 rounded-full border border-[#e2ddd6] overflow-visible">
-          {(() => {
-            const pct = Math.min(100, Math.max(0,
-              ((result.effective_per_sf - result.benchmark_low) / (result.benchmark_high - result.benchmark_low)) * 100
-            ));
-            return (
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-5 rounded-sm bg-brand-500 border-2 border-white shadow-md z-10"
-                style={{ left: `calc(${pct}% - 6px)` }}
-                title={`$${result.effective_per_sf.toFixed(0)}/SF`}
-              />
-            );
-          })()}
+        <div className="flex justify-between text-[10px] font-black uppercase tracking-wider">
+          <span>${result.benchmark_low}</span>
+          <span>${result.benchmark_mid}</span>
+          <span>${result.benchmark_high}</span>
         </div>
-        <div className="flex justify-between text-xs font-black">
-          <span className="text-emerald-600">${result.benchmark_low}</span>
-          <span className="text-brand-600">${result.benchmark_mid}</span>
-          <span className="text-amber-600">${result.benchmark_high}</span>
-        </div>
-        <p className="text-center text-xs text-slate-500 mt-1">
-          Your price: <span className="font-black text-[#111]">${result.effective_per_sf.toFixed(0)}/SF</span>
+        <p className="text-center text-xs font-black mt-1">
+          Your rate: <span className="border-b-2 border-black">${result.effective_per_sf.toFixed(0)}/SF</span>
         </p>
       </div>
     </div>
@@ -113,37 +101,27 @@ function MarketGauge({ result }: { result: EstimateResult }) {
 function RiskFlagPanel({ flags }: { flags: RiskFlag[] }) {
   if (flags.length === 0) {
     return (
-      <div className="card p-4 flex items-center gap-3">
-        <CheckCircle2 size={17} className="text-emerald-600 flex-shrink-0" />
-        <p className="text-sm text-slate-600">No critical risk flags detected for this estimate.</p>
+      <div className="border-4 border-black p-4 flex items-center gap-3 bg-[#FFD93D]" style={{ boxShadow:'4px 4px 0 #000' }}>
+        <CheckCircle2 size={17} strokeWidth={3} />
+        <p className="text-xs font-bold uppercase tracking-wide">No critical risk flags detected.</p>
       </div>
     );
   }
 
-  const severityConfig: Record<string, { bg: string; border: string; text: string; icon: ReactNode }> = {
-    Critical: { bg: 'bg-red-50',    border: 'border-red-200',    text: 'text-red-700',    icon: <AlertCircle size={14} /> },
-    High:     { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', icon: <AlertTriangle size={14} /> },
-    Medium:   { bg: 'bg-amber-50',  border: 'border-amber-200',  text: 'text-amber-700',  icon: <AlertTriangle size={14} /> },
-    Low:      { bg: 'bg-[#f8f6f3]', border: 'border-[#e2ddd6]',  text: 'text-slate-500',  icon: <Info size={14} /> },
-  };
+  const sevBg: Record<string, string> = { Critical:'#FF6B6B', High:'#FF6B6B', Medium:'#C4B5FD', Low:'#FFD93D' };
 
   return (
     <div className="space-y-2">
-      {flags.map((flag) => {
-        const cfg = severityConfig[flag.severity];
-        return (
-          <div key={flag.id} className={`rounded-xl border p-3 ${cfg.bg} ${cfg.border}`}>
-            <div className={`flex items-center gap-2 text-sm mb-1 ${cfg.text}`}>
-              {cfg.icon}
-              <span className="text-[10px] uppercase tracking-widest font-black">{flag.severity}</span>
-              <span className="text-slate-300 font-normal text-xs">·</span>
-              <span className="text-xs text-slate-500 font-medium">{flag.category}</span>
-            </div>
-            <p className="text-sm text-slate-700 leading-relaxed">{flag.message}</p>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">→ {flag.recommendation}</p>
+      {flags.map((flag) => (
+        <div key={flag.id} className="border-3 border-black p-3" style={{ border:'3px solid #000', background: sevBg[flag.severity] ?? '#FFD93D', boxShadow:'3px 3px 0 #000' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[9px] font-black uppercase tracking-widest border-2 border-black px-1.5 py-0.5 bg-black text-white">{flag.severity}</span>
+            <span className="text-[9px] font-bold uppercase tracking-wide text-black/60">{flag.category}</span>
           </div>
-        );
-      })}
+          <p className="text-xs font-bold leading-relaxed">{flag.message}</p>
+          <p className="text-[10px] font-medium text-black/70 mt-1">→ {flag.recommendation}</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -157,42 +135,36 @@ function LineItemTable({ result }: { result: EstimateResult }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm border-2 border-black">
         <thead>
-          <tr className="border-b border-[#e2ddd6]">
-            <th className="text-left text-[10px] font-black text-slate-400 uppercase tracking-widest pb-2">Item</th>
-            <th className="text-right text-[10px] font-black text-slate-400 uppercase tracking-widest pb-2">$/SF</th>
-            <th className="text-right text-[10px] font-black text-slate-400 uppercase tracking-widest pb-2">Total</th>
+          <tr className="bg-black text-white">
+            <th className="text-left text-[9px] font-black uppercase tracking-widest p-2">Item</th>
+            <th className="text-right text-[9px] font-black uppercase tracking-widest p-2">$/SF</th>
+            <th className="text-right text-[9px] font-black uppercase tracking-widest p-2">Total</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#e2ddd6]">
+        <tbody>
           {result.line_items.map((item, i) => (
-            <tr key={i} className={item.category === 'markup' ? 'bg-[#f8f6f3]' : ''}>
-              <td className="py-2.5">
-                <div className="text-[#111] font-medium">{item.label}</div>
+            <tr key={i} className="border-b-2 border-black" style={{ background: item.category === 'markup' ? '#FFFDF5' : '#fff' }}>
+              <td className="py-2 px-2">
+                <div className="font-bold text-xs">{item.label}</div>
                 {item.multipliers_applied.length > 0 && (
-                  <div className="text-xs text-slate-400 mt-0.5">{item.multipliers_applied.join(' · ')}</div>
+                  <div className="text-[9px] text-black/40 mt-0.5 font-medium">{item.multipliers_applied.join(' · ')}</div>
                 )}
               </td>
-              <td className="py-2.5 text-right text-slate-400 tabular-nums">
-                {item.per_sf ? fmtSF(item.per_sf) : '—'}
-              </td>
-              <td className={`py-2.5 text-right font-bold tabular-nums ${
-                item.category === 'markup' ? 'text-slate-500' : 'text-[#111]'
-              }`}>
-                {fmt(item.adjusted_value)}
-              </td>
+              <td className="py-2 px-2 text-right text-[10px] font-bold text-black/50 tabular-nums">{item.per_sf ? fmtSF(item.per_sf) : '—'}</td>
+              <td className="py-2 px-2 text-right font-black text-xs tabular-nums">{fmt(item.adjusted_value)}</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
-          <tr className="border-t-2 border-[#ccc8c0]">
-            <td colSpan={2} className="pt-3 font-black text-[#111] text-base uppercase tracking-wide">Total Contract Value</td>
-            <td className="pt-3 text-right font-black text-xl text-brand-600 tabular-nums">{fmt(result.grand_total)}</td>
+          <tr className="border-t-4 border-black bg-[#FFD93D]">
+            <td colSpan={2} className="pt-2 pb-2 px-2 font-black text-sm uppercase tracking-wide">Total Contract Value</td>
+            <td className="pt-2 pb-2 px-2 text-right font-black text-xl tabular-nums">{fmt(result.grand_total)}</td>
           </tr>
-          <tr>
-            <td colSpan={2} className="pt-1 text-xs text-slate-400">Effective rate</td>
-            <td className="pt-1 text-right text-sm font-black text-slate-600 tabular-nums">${result.effective_per_sf.toFixed(2)}/SF</td>
+          <tr className="border-t border-black/20">
+            <td colSpan={2} className="pt-1 pb-1 px-2 text-[10px] font-bold uppercase tracking-wide text-black/50">Effective rate</td>
+            <td className="pt-1 pb-1 px-2 text-right text-xs font-black tabular-nums">${result.effective_per_sf.toFixed(2)}/SF</td>
           </tr>
         </tfoot>
       </table>
@@ -210,49 +182,38 @@ function AIAdvisorCard({ commentary, loading, onRequest, hasKey }: {
   hasKey: boolean;
 }) {
   return (
-    <div className="card p-5">
+    <div className="border-4 border-black p-5 bg-white" style={{ boxShadow:'8px 8px 0 #000' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Brain size={17} className="text-brand-500" />
+          <span className="w-9 h-9 flex items-center justify-center border-2 border-black bg-[#C4B5FD]">
+            <Brain size={17} strokeWidth={3} />
+          </span>
           <div>
-            <p className="font-black text-[#111] text-sm">AI Estimator Advisory</p>
-            <p className="text-xs text-slate-400">Powered by the estimate packet — no prices invented</p>
+            <p className="font-black text-sm uppercase tracking-wide">AI Estimator Advisory</p>
+            <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide">Estimate packet — no prices invented</p>
           </div>
         </div>
         {!commentary && (
-          <button
-            onClick={onRequest}
-            disabled={loading || !hasKey}
-            className={`px-4 py-2 rounded text-xs font-black uppercase tracking-wider transition-all duration-150 ${
-              loading    ? 'bg-brand-500/20 text-brand-600 cursor-wait border border-brand-300' :
-              !hasKey    ? 'bg-[#f8f6f3] text-slate-400 cursor-not-allowed border border-[#e2ddd6]' :
-                           'bg-brand-500 hover:bg-brand-600 text-white border border-brand-500'
-            }`}
-          >
+          <button onClick={onRequest} disabled={loading || !hasKey}
+            className={`neo-btn text-xs px-3 py-2 ${loading || !hasKey ? 'opacity-50 cursor-not-allowed' : ''}`}>
             {loading ? 'Analyzing…' : !hasKey ? 'Add OpenAI Key' : 'Get AI Analysis →'}
           </button>
         )}
       </div>
-
       {!hasKey && !commentary && (
-        <div className="bg-[#f8f6f3] border border-[#e2ddd6] rounded-xl p-4">
-          <p className="text-sm text-slate-600 leading-relaxed">
-            Add your OpenAI API key as <code className="text-brand-600 bg-brand-500/10 px-1 rounded font-mono">OPENAI_API_KEY</code> in a <code className="text-brand-600 bg-brand-500/10 px-1 rounded font-mono">.env.local</code> file to enable AI commentary.
-          </p>
-          <p className="text-xs text-slate-400 mt-2">The AI receives only the structured estimate packet and explains the pricing strategy. It does not invent or override any numbers.</p>
+        <div className="border-2 border-black p-4 bg-[#FFFDF5]">
+          <p className="text-xs font-medium">Add <code className="font-black bg-[#FFD93D] px-1">OPENAI_API_KEY</code> to <code className="font-black bg-[#FFD93D] px-1">.env.local</code> to enable AI commentary.</p>
         </div>
       )}
-
       {loading && (
         <div className="flex items-center gap-3 py-4">
-          <div className="w-4 h-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin" />
-          <p className="text-sm text-slate-500">Analyzing estimate packet…</p>
+          <div className="w-4 h-4 border-2 border-black animate-spin" style={{ borderTopColor:'transparent' }} />
+          <p className="text-xs font-black uppercase tracking-widest">Analyzing…</p>
         </div>
       )}
-
       {commentary && (
-        <div className="bg-[#f8f6f3] border border-[#e2ddd6] rounded-xl p-4">
-          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{commentary}</p>
+        <div className="border-2 border-black p-4 bg-[#FFFDF5]">
+          <p className="text-xs font-medium leading-relaxed whitespace-pre-wrap">{commentary}</p>
         </div>
       )}
     </div>
@@ -265,21 +226,21 @@ function AIAdvisorCard({ commentary, loading, onRequest, hasKey }: {
 function AssumptionsCard({ title, items, icon }: { title: string; items: string[]; icon: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="card">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left">
+    <div className="border-4 border-black bg-white" style={{ boxShadow:'4px 4px 0 #000' }}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-[#FFFDF5] transition-colors">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400">{icon}</span>
-          <span className="text-sm font-bold text-[#111]">{title}</span>
-          <span className="text-[10px] font-black text-slate-400 bg-[#f0ede8] px-2 py-0.5 rounded border border-[#e2ddd6]">{items.length}</span>
+          {icon}
+          <span className="text-xs font-black uppercase tracking-wide">{title}</span>
+          <span className="text-[9px] font-black border-2 border-black px-1.5 py-0.5 bg-[#FFD93D]">{items.length}</span>
         </div>
-        {open ? <ChevronUp size={13} className="text-slate-400" /> : <ChevronDown size={13} className="text-slate-400" />}
+        {open ? <ChevronUp size={13} strokeWidth={3} /> : <ChevronDown size={13} strokeWidth={3} />}
       </button>
       {open && (
-        <div className="px-4 pb-4">
-          <ul className="space-y-1.5">
+        <div className="px-4 pb-4 border-t-2 border-black">
+          <ul className="space-y-1.5 pt-3">
             {items.map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-slate-500">
-                <span className="text-brand-400 mt-0.5 flex-shrink-0">—</span>
+              <li key={i} className="flex items-start gap-2 text-xs font-medium">
+                <span className="font-black mt-0.5 flex-shrink-0">—</span>
                 {item}
               </li>
             ))}
@@ -320,53 +281,40 @@ export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI,
     <div className="space-y-5">
 
       {/* ── Header summary bar ── */}
-      <div className="bg-white border border-[#e2ddd6] rounded-2xl p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-brand-600 border border-brand-500/40 px-2.5 py-1 rounded-sm font-mono mb-2">
-              {packet.mode} Estimate · {packet.project_type_label}
-            </span>
-            <p className="text-xs text-slate-400 mb-2">
-              {packet.work_type_name} · {packet.region_name} · {packet.total_sf.toLocaleString()} SF
-            </p>
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-black text-[#111] tabular-nums">{fmt(result.grand_total)}</span>
-              <span className="text-lg font-black text-brand-600 tabular-nums">${result.effective_per_sf.toFixed(0)}/SF</span>
+      <div className="relative border-4 border-black bg-white" style={{ boxShadow:'10px 10px 0 #000' }}>
+        <div className="absolute inset-0 bg-[#FFD93D] translate-x-[10px] translate-y-[10px] -z-10 border-4 border-black" />
+        <div className="p-5">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="bracket-tag">{packet.mode} Estimate</span>
+                <span className="text-[10px] font-black border-2 border-black px-2 py-0.5 bg-[#C4B5FD]">{packet.project_type_label}</span>
+              </div>
+              <p className="text-xs font-bold text-black/60 mb-3 uppercase tracking-wide">{packet.work_type_name} · {packet.region_name} · {packet.total_sf.toLocaleString()} SF</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-black tabular-nums">{fmt(result.grand_total)}</span>
+                <span className="text-xl font-black text-[#FF6B6B] tabular-nums border-b-4 border-[#FF6B6B]">${result.effective_per_sf.toFixed(0)}/SF</span>
+              </div>
+              <p className="text-[10px] font-bold text-black/50 mt-1 uppercase tracking-wide">{packet.work_condition_label}</p>
             </div>
-            <p className="text-xs text-slate-400 mt-1">{packet.work_condition_label}</p>
-          </div>
-          <div className="flex flex-wrap gap-2 md:flex-col md:items-end shrink-0">
-            <button
-              onClick={() => {
-                sessionStorage.setItem('glaze_print_packet', JSON.stringify(packet));
-                window.open('/print', '_blank');
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#f8f6f3] border border-[#e2ddd6] hover:border-[#ccc8c0] text-[#111] text-xs font-bold rounded transition-colors uppercase tracking-wider"
-            >
-              <Printer size={13} /> Print / Export
-            </button>
-            <button
-              onClick={onReset}
-              className="flex items-center gap-2 px-4 py-2 bg-[#f8f6f3] hover:bg-[#f0ede8] border border-[#e2ddd6] text-slate-500 text-xs font-bold rounded transition-colors uppercase tracking-wider"
-            >
-              <RotateCcw size={13} /> New Estimate
-            </button>
+            <div className="flex flex-wrap gap-2 md:flex-col md:items-end shrink-0">
+              <button onClick={() => { sessionStorage.setItem('glaze_print_packet', JSON.stringify(packet)); window.open('/print', '_blank'); }}
+                className="neo-btn-yellow flex items-center gap-2 text-xs px-4 py-2">
+                <Printer size={13} strokeWidth={3} /> Print / Export
+              </button>
+              <button onClick={onReset} className="neo-btn-ghost flex items-center gap-2 text-xs px-4 py-2">
+                <RotateCcw size={13} strokeWidth={3} /> New Estimate
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── Tab navigation ── */}
-      <div className="flex gap-1 bg-white border border-[#e2ddd6] rounded-xl p-1">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 flex-1 justify-center px-3 py-2 rounded text-xs font-black uppercase tracking-wider transition-all ${
-              activeTab === tab.id
-                ? 'bg-brand-500 text-white shadow-sm'
-                : 'text-slate-400 hover:text-[#111] hover:bg-[#f8f6f3]'
-            }`}
-          >
+      <div className="flex gap-0 border-4 border-black">
+        {TABS.map((tab, i) => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-1.5 flex-1 justify-center px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-100 ${i > 0 ? 'border-l-4 border-black' : ''} ${activeTab === tab.id ? 'bg-[#FF6B6B] text-black' : 'bg-white text-black/50 hover:bg-[#FFD93D] hover:text-black'}`}>
             {tab.icon}{tab.label}
           </button>
         ))}
@@ -385,17 +333,20 @@ export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI,
       {activeTab === 'estimate' && <>
 
       {/* Key metrics row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Material',     value: fmt(result.total_material),  sub: `${((result.total_material / result.grand_total) * 100).toFixed(0)}% of total` },
-          { label: 'Labor',        value: fmt(result.total_labor),     sub: `${result.total_labor_hours.toFixed(0)} hrs` },
-          { label: 'Equipment',    value: fmt(result.total_equipment), sub: 'Staging & access' },
-          { label: 'Total Direct', value: fmt(result.total_direct),    sub: 'Before markups' },
+          { label: 'Material',     value: fmt(result.total_material),  sub: `${((result.total_material / result.grand_total) * 100).toFixed(0)}% of total`, bg:'#FFD93D' },
+          { label: 'Labor',        value: fmt(result.total_labor),     sub: `${result.total_labor_hours.toFixed(0)} hrs`,                                   bg:'#C4B5FD' },
+          { label: 'Equipment',    value: fmt(result.total_equipment), sub: 'Staging & access',                                                             bg:'#FFFDF5' },
+          { label: 'Total Direct', value: fmt(result.total_direct),    sub: 'Before markups',                                                               bg:'#FF6B6B' },
         ].map((s, i) => (
-          <div key={i} className="card p-3">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{s.label}</p>
-            <p className="text-base font-black text-[#111] tabular-nums">{s.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{s.sub}</p>
+          <div key={i} className="relative">
+            <div className="absolute inset-0 border-4 border-black translate-x-[4px] translate-y-[4px]" style={{ background: s.bg }} />
+            <div className="relative border-4 border-black p-3 bg-white">
+              <p className="text-[9px] font-black uppercase tracking-widest mb-1 text-black/60">{s.label}</p>
+              <p className="text-sm font-black tabular-nums">{s.value}</p>
+              <p className="text-[10px] font-bold text-black/50 mt-0.5">{s.sub}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -407,30 +358,31 @@ export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI,
           <ConfidenceMeter confidence={confidence} />
           <MarketGauge result={result} />
           {criticalCount > 0 && (
-            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-2 flex items-center gap-2">
-              <AlertTriangle size={14} className="text-orange-600 flex-shrink-0" />
-              <p className="text-sm text-orange-700 font-bold">{criticalCount} high-priority risk flag{criticalCount > 1 ? 's' : ''} below</p>
+            <div className="border-2 border-black px-4 py-2 flex items-center gap-2 bg-[#FF6B6B]" style={{ boxShadow:'2px 2px 0 #000' }}>
+              <AlertTriangle size={14} strokeWidth={3} />
+              <p className="text-xs font-black uppercase tracking-wide">{criticalCount} high-priority flag{criticalCount > 1 ? 's' : ''}</p>
             </div>
           )}
         </div>
 
         {/* Right: line item breakdown */}
-        <div className="lg:col-span-2 card p-5">
+        <div className="lg:col-span-2 border-4 border-black p-5 bg-white" style={{ boxShadow:'6px 6px 0 #000' }}>
           <div className="flex items-center gap-2 mb-4">
-            <DollarSign size={15} className="text-brand-500" />
-            <p className="text-sm font-black text-[#111]">Cost Breakdown</p>
+            <span className="w-7 h-7 flex items-center justify-center border-2 border-black bg-[#FFD93D]">
+              <DollarSign size={13} strokeWidth={3} />
+            </span>
+            <p className="text-sm font-black uppercase tracking-wide">Cost Breakdown</p>
           </div>
           <LineItemTable result={result} />
-
           <details className="mt-4">
-            <summary className="text-xs text-slate-400 cursor-pointer hover:text-[#111] transition-colors select-none font-bold">
-              View applied multipliers audit trail
+            <summary className="text-[10px] font-black uppercase tracking-widest cursor-pointer border-2 border-black px-2 py-1 inline-block hover:bg-[#FFD93D] transition-colors select-none">
+              Multipliers Audit Trail
             </summary>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               {result.multipliers_summary.map((m, i) => (
-                <div key={i} className="flex items-center justify-between bg-[#f8f6f3] border border-[#e2ddd6] rounded px-2 py-1.5">
-                  <span className="text-xs text-slate-500">{m.name}</span>
-                  <span className="text-xs font-black text-[#111] tabular-nums">×{m.value.toFixed(2)}</span>
+                <div key={i} className="flex items-center justify-between border-2 border-black px-2 py-1.5 bg-[#FFFDF5]">
+                  <span className="text-[10px] font-bold uppercase tracking-wide">{m.name}</span>
+                  <span className="text-xs font-black tabular-nums">×{m.value.toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -441,8 +393,9 @@ export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI,
       {/* Risk flags */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle size={14} className="text-amber-600" />
-          <p className="text-sm font-black text-[#111]">Risk Flags <span className="text-slate-400 font-normal">({risk_flags.length})</span></p>
+          <AlertTriangle size={14} strokeWidth={3} />
+          <p className="text-sm font-black uppercase tracking-wide">Risk Flags</p>
+          <span className="text-[9px] font-black border-2 border-black px-1.5 py-0.5 bg-[#FF6B6B]">{risk_flags.length}</span>
         </div>
         <RiskFlagPanel flags={risk_flags} />
       </div>

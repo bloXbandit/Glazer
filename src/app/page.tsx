@@ -203,70 +203,54 @@ export default function HomePage() {
   const STEP_LABELS = ['Glazing Scope', 'Conditions', 'Quantities', 'Markups', 'Results'];
 
   return (
-    <div className="min-h-screen bg-[#f0ede8] bg-grid flex flex-col">
+    <div className="min-h-screen bg-[#FFFDF5] bg-grid flex flex-col">
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="border-b border-[#e2ddd6] bg-white/90 backdrop-blur sticky top-0 z-50">
+      <header className="border-b-4 border-black bg-[#FFFDF5] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
 
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 bg-brand-500 rounded flex items-center justify-center">
-              <Building size={14} className="text-white" />
+          {/* Logo — compact broken-glass wordmark */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center justify-center w-8 h-8 bg-[#FFD93D] border-2 border-black"
+              style={{ boxShadow:'3px 3px 0 #000' }}>
+              <Building size={14} strokeWidth={3} className="text-black" />
             </div>
-            <span className="font-black text-[#111] text-sm tracking-tight">GlazePro</span>
-            <span className="hidden sm:inline text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-[#e2ddd6] px-2 py-0.5 rounded-sm">
-              DMV Market
-            </span>
+            <div className="leading-none">
+              <span className="block font-black text-black text-[11px] uppercase tracking-[0.12em]">Baltimore</span>
+              <span className="block font-black text-[#FF6B6B] text-[11px] uppercase tracking-[0.12em]">Glass Co.</span>
+            </div>
+            <span className="hidden sm:inline neo-badge ml-1">DMV</span>
           </div>
 
           {/* Stepper */}
           <div className="flex-1 flex justify-center">
-            <StepperNav
-              currentStep={step}
-              onStepClick={setStep}
-              completedSteps={completedSteps}
-            />
+            <StepperNav currentStep={step} onStepClick={setStep} completedSteps={completedSteps} />
           </div>
 
           {/* Right nav */}
           <div className="flex items-center gap-1 shrink-0">
-            <div className="hidden md:flex items-center gap-1 mr-2">
-              <Link
-                href="/procurement"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium text-slate-500 hover:text-[#111] hover:bg-[#f0ede8] transition-colors"
-              >
-                <FileText size={11} />
-                Procurement
+            <div className="hidden md:flex items-center gap-1">
+              <Link href="/procurement"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-transparent hover:border-black hover:bg-[#C4B5FD] font-bold text-xs uppercase tracking-wide transition-all duration-100">
+                <FileText size={11} strokeWidth={3} /> Procurement
               </Link>
-              <Link
-                href="/clients"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium text-slate-500 hover:text-[#111] hover:bg-[#f0ede8] transition-colors"
-              >
-                <Phone size={11} />
-                Clients
+              <Link href="/clients"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-transparent hover:border-black hover:bg-[#C4B5FD] font-bold text-xs uppercase tracking-wide transition-all duration-100">
+                <Phone size={11} strokeWidth={3} /> Clients
               </Link>
             </div>
-
-            {/* Live data pill */}
-            <div className="hidden lg:block text-[10px] font-bold uppercase tracking-widest">
+            <div className="hidden lg:block text-[10px] font-black uppercase tracking-widest ml-1">
               {liveDataStatus === 'idle' && (
-                <button onClick={fetchLiveData} className="border border-[#e2ddd6] px-2.5 py-1 rounded text-slate-400 hover:border-brand-500/50 hover:text-brand-600 transition-colors">
-                  Fetch Live Data
-                </button>
+                <button onClick={fetchLiveData} className="neo-btn-ghost text-[10px] py-1 px-2">Live Data</button>
               )}
               {liveDataStatus === 'loading' && (
-                <span className="border border-[#e2ddd6] px-2.5 py-1 rounded text-slate-400">Loading…</span>
+                <span className="border-2 border-black px-2 py-1 bg-[#C4B5FD]">Loading…</span>
               )}
               {liveDataStatus === 'fresh' && (
-                <span className="border border-emerald-500/40 px-2.5 py-1 rounded text-emerald-700 bg-emerald-50">
-                  ⚡ {liveFactors.length} Live
-                </span>
+                <span className="border-2 border-black px-2 py-1 bg-[#FFD93D]">⚡ {liveFactors.length} Live</span>
               )}
               {liveDataStatus === 'error' && (
-                <span className="border border-amber-400/40 px-2.5 py-1 rounded text-amber-700 bg-amber-50">
-                  Live Unavailable
-                </span>
+                <span className="border-2 border-black px-2 py-1 bg-[#FF6B6B]">Offline</span>
               )}
             </div>
           </div>
@@ -276,46 +260,103 @@ export default function HomePage() {
       {/* ── Main ───────────────────────────────────────────────── */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
 
-        {/* Step heading */}
-        {step < 5 && (
-          <div className="mb-7">
-            <span className="bracket-tag mb-3 inline-block">
-              Step {step} of 4 — {STEP_LABELS[step - 1]}
-            </span>
-            {step === 1 && (
-              <>
-                <h1 className="text-3xl font-black text-[#111] leading-tight">
-                  Select your <span className="text-brand-500">Glazing</span> Scope
+        {/* ── Step 1 Hero ─────────────────────────────────────── */}
+        {step === 1 && (
+          <div className="mb-10">
+            {/* Broken-glass title block */}
+            <div className="relative inline-block mb-6">
+              {/* Yellow backing slab */}
+              <div className="absolute inset-0 bg-[#FFD93D] translate-x-[6px] translate-y-[6px] border-4 border-black" />
+              <div className="relative bg-white border-4 border-black px-6 py-4 overflow-hidden"
+                style={{ boxShadow:'none' }}>
+
+                {/* Crack SVG overlay */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 500 90"
+                  preserveAspectRatio="none" style={{ opacity:0.22 }}>
+                  <g stroke="#000" strokeWidth="1.2" fill="none">
+                    <line x1="250" y1="45" x2="30"  y2="5"  />
+                    <line x1="250" y1="45" x2="470" y2="8"  />
+                    <line x1="250" y1="45" x2="15"  y2="80" />
+                    <line x1="250" y1="45" x2="485" y2="85" />
+                    <line x1="250" y1="45" x2="130" y2="90" />
+                    <line x1="250" y1="45" x2="370" y2="90" />
+                    <line x1="250" y1="45" x2="250" y2="0"  />
+                    <line x1="250" y1="45" x2="80"  y2="42" />
+                    <line x1="250" y1="45" x2="420" y2="48" />
+                    <circle cx="250" cy="45" r="5" fill="#000" opacity="0.5" />
+                    <circle cx="250" cy="45" r="2" fill="#000" opacity="0.8" />
+                  </g>
+                </svg>
+
+                {/* Shard layer A — upper-left fragment drifts */}
+                <div className="shard-a absolute inset-0 flex items-center px-6"
+                  style={{ clipPath:'polygon(0 0, 58% 0, 46% 52%, 38% 68%, 0 100%)', transform:'translate(-1px,-1px)' }}>
+                  <h1 className="font-black text-3xl sm:text-4xl md:text-5xl text-[#FF6B6B] uppercase tracking-tighter leading-none whitespace-nowrap select-none">
+                    BALTIMORE GLASS CO.
+                  </h1>
+                </div>
+
+                {/* Shard layer B — upper-right fragment drifts opposite */}
+                <div className="shard-b absolute inset-0 flex items-center px-6"
+                  style={{ clipPath:'polygon(58% 0, 100% 0, 100% 55%, 62% 55%, 46% 52%)', transform:'translate(1px,-1px)' }}>
+                  <h1 className="font-black text-3xl sm:text-4xl md:text-5xl text-black uppercase tracking-tighter leading-none whitespace-nowrap select-none">
+                    BALTIMORE GLASS CO.
+                  </h1>
+                </div>
+
+                {/* Shard layer C — lower fragment */}
+                <div className="shard-c absolute inset-0 flex items-center px-6"
+                  style={{ clipPath:'polygon(0 100%, 38% 68%, 46% 52%, 62% 55%, 100% 55%, 100% 100%)', transform:'translate(0.5px, 1px)' }}>
+                  <h1 className="font-black text-3xl sm:text-4xl md:text-5xl text-black uppercase tracking-tighter leading-none whitespace-nowrap select-none">
+                    BALTIMORE GLASS CO.
+                  </h1>
+                </div>
+
+                {/* Base text (gives layout size) */}
+                <h1 className="font-black text-3xl sm:text-4xl md:text-5xl text-black uppercase tracking-tighter leading-none whitespace-nowrap"
+                  style={{ WebkitTextStroke:'2px #000', color:'transparent' }}>
+                  BALTIMORE GLASS CO.
                 </h1>
-                <p className="text-slate-500 text-sm mt-1.5 max-w-xl">
-                  Each system has its own benchmark pricing, productivity rates, and risk profile.
-                </p>
-              </>
-            )}
+              </div>
+            </div>
+
+            {/* Sub-heading */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="bracket-tag">Step 1 of 4 — Glazing Scope</span>
+              <p className="text-sm font-bold text-black/60 max-w-xl">
+                Select your system. Each has its own benchmark pricing, productivity rates, and risk profile.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step headings for steps 2–4 */}
+        {step >= 2 && step < 5 && (
+          <div className="mb-8">
+            <div className="inline-block mb-3">
+              <span className="bracket-tag">Step {step} of 4 — {STEP_LABELS[step - 1]}</span>
+            </div>
             {step === 2 && (
-              <>
-                <h1 className="text-3xl font-black text-[#111] leading-tight">Region &amp; Project Conditions</h1>
-                <p className="text-slate-500 text-sm mt-1.5">Applies regional multipliers, prevailing wage, and complexity adjustments.</p>
-              </>
+              <h1 className="text-3xl font-black text-black uppercase tracking-tight leading-tight">
+                Region &amp; <span className="bg-[#C4B5FD] px-2 border-2 border-black">Project Conditions</span>
+              </h1>
             )}
             {step === 3 && (
-              <>
-                <h1 className="text-3xl font-black text-[#111] leading-tight">Quantities &amp; Glass Type</h1>
-                <p className="text-slate-500 text-sm mt-1.5">Enter scope quantities for your <span className="font-semibold text-[#111]">{selectedWorkType?.name ?? 'selected system'}</span> estimate.</p>
-              </>
+              <h1 className="text-3xl font-black text-black uppercase tracking-tight leading-tight">
+                Quantities &amp; <span className="bg-[#FFD93D] px-2 border-2 border-black">Glass Type</span>
+              </h1>
             )}
             {step === 4 && (
-              <>
-                <h1 className="text-3xl font-black text-[#111] leading-tight">Markup &amp; Override Settings</h1>
-                <p className="text-slate-500 text-sm mt-1.5">Adjust overhead, contingency, and profit to match your company's rates.</p>
-              </>
+              <h1 className="text-3xl font-black text-black uppercase tracking-tight leading-tight">
+                Markup &amp; <span className="bg-[#FF6B6B] px-2 border-2 border-black">Override Settings</span>
+              </h1>
             )}
           </div>
         )}
 
         {/* Step 1: Glazing Scope Selection */}
         {step === 1 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {workTypes.map(wt => {
               const bench = getBenchmark(wt.id, 'national');
               return (
@@ -401,38 +442,24 @@ export default function HomePage() {
           <div className="mt-10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {step > 1 && (
-                <button
-                  onClick={handleBack}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-[#f8f6f3] border border-[#e2ddd6] hover:border-[#ccc8c0] text-[#111] text-sm font-medium rounded-lg transition-colors"
-                >
-                  <ChevronLeft size={15} />
+                <button onClick={handleBack} className="neo-btn-ghost flex items-center gap-2 px-5 py-2.5">
+                  <ChevronLeft size={15} strokeWidth={3} />
                   Back
                 </button>
               )}
               {error && (
-                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 flex items-center gap-1.5">
+                <p className="text-xs font-bold text-black bg-[#FF6B6B] border-2 border-black px-3 py-1.5 flex items-center gap-1.5"
+                  style={{ boxShadow:'3px 3px 0 #000' }}>
                   ⚠ {error}
                 </p>
               )}
             </div>
 
-            <button
-              onClick={handleNext}
-              className={`flex items-center gap-2 px-7 py-2.5 text-sm font-black rounded-lg uppercase tracking-wider transition-all duration-150 ${
-                step === 4
-                  ? 'bg-brand-500 hover:bg-brand-600 text-white shadow-md shadow-brand-500/25'
-                  : 'bg-brand-500 hover:bg-brand-600 text-white shadow-md shadow-brand-500/25'
-              }`}
-            >
+            <button onClick={handleNext} className="neo-btn flex items-center gap-2 px-7 py-3 text-sm">
               {step === 4 ? (
-                <>
-                  <Calculator size={15} />
-                  Calculate →
-                </>
+                <><Calculator size={15} strokeWidth={3} /> Calculate</>
               ) : (
-                <>
-                  Next →
-                </>
+                <>Next <ChevronRight size={15} strokeWidth={3} /></>
               )}
             </button>
           </div>
@@ -440,11 +467,15 @@ export default function HomePage() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────── */}
-      <footer className="border-t border-[#e2ddd6] bg-white/60 py-4 px-6 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          <span>GlazePro Estimating Platform · DMV Commercial Glazing</span>
-          <span>RSMeans 2024 · DMV Regional Bid Records · CSI Div. 08</span>
-          <span>MVP v1.0</span>
+      <footer className="border-t-4 border-black bg-black py-5 px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span className="font-black text-[#FFD93D] text-xs uppercase tracking-[0.18em]">
+            Baltimore Glass Co. · Est. Estimating Platform
+          </span>
+          <span className="font-bold text-white/50 text-[10px] uppercase tracking-widest">
+            RSMeans 2024 · DMV Bid Records · CSI Div. 08
+          </span>
+          <span className="font-black text-[#FF6B6B] text-[10px] uppercase tracking-widest">v1.0</span>
         </div>
       </footer>
     </div>

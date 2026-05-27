@@ -1,8 +1,7 @@
 'use client';
-import { CheckCircle2, Circle } from 'lucide-react';
 
 const STEPS = [
-  { id: 1, label: 'Glazing Scope' },
+  { id: 1, label: 'Scope' },
   { id: 2, label: 'Conditions' },
   { id: 3, label: 'Quantities' },
   { id: 4, label: 'Markups' },
@@ -20,7 +19,7 @@ export default function StepperNav({ currentStep, onStepClick, completedSteps }:
     <div className="flex items-center gap-0">
       {STEPS.map((step, idx) => {
         const isCompleted = completedSteps.includes(step.id);
-        const isCurrent = currentStep === step.id;
+        const isCurrent   = currentStep === step.id;
         const isClickable = isCompleted || step.id <= Math.max(...completedSteps, 1);
 
         return (
@@ -28,32 +27,26 @@ export default function StepperNav({ currentStep, onStepClick, completedSteps }:
             <button
               onClick={() => isClickable && onStepClick(step.id)}
               disabled={!isClickable}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-bold transition-all duration-150 uppercase tracking-wider ${
-                isCurrent
-                  ? 'bg-brand-500/10 text-brand-600'
+              className={`flex items-center gap-1.5 px-2 py-1 text-[10px] font-black uppercase tracking-widest
+                transition-all duration-100 border-2
+                ${isCurrent
+                  ? 'border-black bg-[#FF6B6B] text-black'
                   : isCompleted
-                  ? 'text-slate-500 hover:text-[#111] hover:bg-[#f0ede8] cursor-pointer'
-                  : 'text-slate-300 cursor-not-allowed'
-              }`}
+                  ? 'border-black bg-[#FFD93D] text-black hover:-translate-y-px cursor-pointer'
+                  : 'border-black/20 bg-transparent text-black/25 cursor-not-allowed'
+                }`}
+              style={isCurrent ? { boxShadow:'2px 2px 0 #000' } : isCompleted ? { boxShadow:'2px 2px 0 #000' } : {}}
             >
-              <span className={`flex-shrink-0`}>
-                {isCompleted && !isCurrent ? (
-                  <CheckCircle2 size={14} className="text-emerald-600" />
-                ) : (
-                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-black border ${
-                    isCurrent
-                      ? 'border-brand-500 bg-brand-500 text-white'
-                      : 'border-[#e2ddd6] text-slate-400'
-                  }`}>
-                    {step.id}
-                  </span>
-                )}
+              <span className={`inline-flex items-center justify-center w-4 h-4 font-black text-[9px]
+                border-2 ${isCurrent ? 'border-black bg-black text-[#FF6B6B]' : isCompleted ? 'border-black bg-black text-[#FFD93D]' : 'border-black/20 bg-transparent text-black/25'}`}>
+                {isCompleted && !isCurrent ? '✓' : step.id}
               </span>
-              <span className="hidden sm:inline">{step.label}</span>
+              <span className="hidden md:inline">{step.label}</span>
             </button>
+
             {idx < STEPS.length - 1 && (
-              <div className={`w-6 h-px mx-0.5 transition-colors ${
-                completedSteps.includes(step.id) ? 'bg-[#ccc8c0]' : 'bg-[#e2ddd6]'
+              <div className={`w-4 h-0.5 transition-colors ${
+                completedSteps.includes(step.id) ? 'bg-black' : 'bg-black/15'
               }`} />
             )}
           </div>
