@@ -28,7 +28,7 @@ export const glassTypes: GlassType[] = [
     source_ids: ['src-rsmeans-2024', 'src-gana-2023'],
     applicable_work_types: [
       'storefront', 'stick_curtain_wall', 'unitized_curtain_wall',
-      'window_wall', 'skylight'
+      'window_wall', 'skylight', 'residential_window'
     ]
   },
   {
@@ -40,7 +40,8 @@ export const glassTypes: GlassType[] = [
     performance_notes: 'Common in DC/VA office projects. Reduces HVAC load. Slight color variation batch to batch.',
     source_ids: ['src-rsmeans-2024', 'src-gana-2023'],
     applicable_work_types: [
-      'storefront', 'stick_curtain_wall', 'unitized_curtain_wall', 'window_wall'
+      'storefront', 'stick_curtain_wall', 'unitized_curtain_wall', 'window_wall',
+      'residential_window', 'decorative_glass'
     ]
   },
   {
@@ -52,7 +53,8 @@ export const glassTypes: GlassType[] = [
     performance_notes: 'Code-required in many locations. All sizes must be finalized before fabrication — cannot be cut after tempering.',
     source_ids: ['src-rsmeans-2024', 'src-fabglass-guide'],
     applicable_work_types: [
-      'storefront', 'interior_partition', 'glass_railing'
+      'storefront', 'interior_partition', 'glass_railing',
+      'residential_window', 'decorative_glass'
     ]
   },
   {
@@ -64,7 +66,8 @@ export const glassTypes: GlassType[] = [
     performance_notes: 'Provides fall-out prevention, acoustic control, and forced-entry resistance. Heavier than standard — structural check required for large lites.',
     source_ids: ['src-rsmeans-2024', 'src-fabglass-guide'],
     applicable_work_types: [
-      'interior_partition', 'glass_railing', 'skylight', 'storefront'
+      'interior_partition', 'glass_railing', 'skylight', 'storefront',
+      'decorative_glass'
     ]
   },
   {
@@ -105,7 +108,7 @@ export const glassTypes: GlassType[] = [
     lead_time_impact_weeks: 2,
     performance_notes: 'Used in noisy urban environments, hospitals, and studio spaces. Check STC rating requirements in specs.',
     source_ids: ['src-rsmeans-2024', 'src-gana-2023'],
-    applicable_work_types: ['interior_partition', 'window_wall', 'storefront']
+    applicable_work_types: ['interior_partition', 'window_wall', 'storefront', 'residential_window']
   }
 ];
 

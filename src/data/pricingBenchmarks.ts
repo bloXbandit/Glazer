@@ -196,6 +196,74 @@ export const pricingBenchmarks: PricingBenchmark[] = [
   },
 
   // ----------------------------------------------------------
+  // RESIDENTIAL WINDOW & DOOR
+  // Source: RSMeans 2024 + Baltimore Glass Co. service area data
+  // $/SF = installed, includes frame, glass, and labor
+  // ----------------------------------------------------------
+  {
+    id: 'pb-residential-window-national',
+    work_type_id: 'residential_window',
+    region_id: 'national',
+    price_low: 28,
+    price_mid: 42,
+    price_high: 62,
+    year: 2024,
+    source_id: 'src-rsmeans-2024',
+    notes: 'Residential window replacement, installed. Includes double-pane IGU, standard vinyl/aluminum frame. Patio doors run 10-20% higher per SF.'
+  },
+  {
+    id: 'pb-residential-window-baltimore',
+    work_type_id: 'residential_window',
+    region_id: 'baltimore',
+    price_low: 30,
+    price_mid: 45,
+    price_high: 68,
+    year: 2024,
+    source_id: 'src-rsmeans-2024',
+    notes: 'Baltimore metro residential. Rowhouse and townhome stock common — older frames, lead abatement may apply.'
+  },
+  {
+    id: 'pb-residential-window-dc',
+    work_type_id: 'residential_window',
+    region_id: 'dc',
+    price_low: 32,
+    price_mid: 48,
+    price_high: 72,
+    year: 2024,
+    source_id: 'src-rsmeans-2024',
+    notes: 'DC area residential. Higher labor cost; historic district permitting may apply in Capitol Hill, Georgetown, etc.'
+  },
+
+  // ----------------------------------------------------------
+  // DECORATIVE & SPECIALTY GLASS
+  // Covers: shower enclosures, mirrors, table tops, shelves,
+  // stained glass, patterned glass, tinted flat glass
+  // Source: RSMeans 2024 + Fab Glass & Mirror trade data
+  // ----------------------------------------------------------
+  {
+    id: 'pb-decorative-glass-national',
+    work_type_id: 'decorative_glass',
+    region_id: 'national',
+    price_low: 18,
+    price_mid: 38,
+    price_high: 75,
+    year: 2024,
+    source_id: 'src-fabglass-guide',
+    notes: 'Wide range: basic clear-cut shelves at low end; frameless shower enclosures and beveled mirrors at mid; stained/patterned art glass at high end.'
+  },
+  {
+    id: 'pb-decorative-glass-baltimore',
+    work_type_id: 'decorative_glass',
+    region_id: 'baltimore',
+    price_low: 20,
+    price_mid: 42,
+    price_high: 80,
+    year: 2024,
+    source_id: 'src-fabglass-guide',
+    notes: 'Baltimore metro decorative glass. Shower enclosures and mirrors are the highest-volume residential service items.'
+  },
+
+  // ----------------------------------------------------------
   // BLAST / SECURITY GLAZING
   // ----------------------------------------------------------
   {

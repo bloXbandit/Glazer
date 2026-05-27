@@ -104,6 +104,30 @@ export const workTypes: WorkType[] = [
     tags: ['fire-rated', 'code-critical', 'UL-listed', 'barrier', 'corridor']
   },
   {
+    id: 'residential_window',
+    name: 'Residential Window & Door',
+    short_description: 'Home window replacement, patio/sliding doors, and storm window repair',
+    use_case: 'Single-family homes, rowhouses, townhomes — glass replacement, patio doors, storm windows',
+    csi_division: '08 51 13',
+    typical_lead_time_weeks: { min: 1, max: 4 },
+    difficulty_rating: 'Low',
+    procurement_risk: 'Low',
+    source_ids: ['src-rsmeans-2024'],
+    tags: ['residential', 'window-replacement', 'patio-door', 'storm-window', 'rowhouse', 'single-family']
+  },
+  {
+    id: 'decorative_glass',
+    name: 'Decorative & Specialty Glass',
+    short_description: 'Custom flat glass: shower enclosures, mirrors, table tops, shelves, stained & patterned glass',
+    use_case: 'Shower enclosures, beveled mirrors, glass table tops/shelves/cabinets, tinted, stained, patterned glass. Also handles screen repair quotes and DIY glass cut orders.',
+    csi_division: '08 81 00',
+    typical_lead_time_weeks: { min: 1, max: 3 },
+    difficulty_rating: 'Low',
+    procurement_risk: 'Low',
+    source_ids: ['src-rsmeans-2024', 'src-fabglass-guide'],
+    tags: ['decorative', 'shower', 'mirror', 'table-top', 'stained-glass', 'patterned', 'tinted', 'residential', 'custom-cut']
+  },
+  {
     id: 'blast_security',
     name: 'Blast / Security Glazing',
     short_description: 'Ballistic, blast-resistant, or forced-entry-resistant glazing assemblies',

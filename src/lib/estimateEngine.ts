@@ -281,6 +281,8 @@ function getBaseMaterialCost(work_type_id: string): number {
     skylight: 65,
     fire_rated: 78,
     blast_security: 118,
+    residential_window: 14,
+    decorative_glass: 16,
   };
   return costs[work_type_id] ?? 30;
 }

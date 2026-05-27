@@ -69,6 +69,20 @@ const WORK_TYPE_KEYWORDS: Record<string, string[]> = {
     'gsa pbs', 'isc criteria', 'forced entry resistant', 'interlayer',
     'security glazing', 'blast film', 'sgp interlayer',
   ],
+  residential_window: [
+    'residential window', 'window replacement', 'home window', 'replace window',
+    'patio door', 'sliding glass door', 'sliding door', 'storm window',
+    'storm door', 'double-hung', 'single-hung', 'casement window',
+    'picture window', 'rowhouse window', 'townhome window', 'house window',
+  ],
+  decorative_glass: [
+    'shower enclosure', 'shower door', 'frameless shower', 'shower glass',
+    'mirror', 'beveled mirror', 'bathroom mirror', 'vanity mirror',
+    'table top', 'glass table', 'glass shelf', 'glass shelving', 'glass cabinet',
+    'stained glass', 'patterned glass', 'decorative glass', 'tinted glass',
+    'frosted glass', 'etched glass', 'leaded glass', 'art glass',
+    'screen repair', 'diy glass', 'custom cut glass', 'cut glass',
+  ],
 };
 
 // ── Inclusion patterns ────────────────────────────────────────

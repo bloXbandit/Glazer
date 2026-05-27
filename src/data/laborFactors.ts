@@ -156,6 +156,20 @@ export const laborProductivity: LaborProductivity[] = [
     hours_per_sf: 0.70,
     source_id: 'src-rsmeans-2024',
     notes: 'High-complexity framing, heavy glass, special anchorage. Specialized crew required.'
+  },
+  {
+    id: 'lp-residential-window',
+    work_type_id: 'residential_window',
+    hours_per_sf: 0.48,
+    source_id: 'src-rsmeans-2024',
+    notes: 'Residential replacement: remove old unit, prep opening, set new frame+glass, trim, seal. Higher hrs/SF than commercial due to small opening count and per-unit handling.'
+  },
+  {
+    id: 'lp-decorative-glass',
+    work_type_id: 'decorative_glass',
+    hours_per_sf: 0.55,
+    source_id: 'src-fabglass-guide',
+    notes: 'Custom cut, edge work, and installation. Shower enclosures and mirrors require precision fitting; stained/patterned glass includes lead or frame assembly time.'
   }
 ];
 
