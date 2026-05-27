@@ -16,7 +16,7 @@ import {
   calculateMarketPosition
 } from '@/data/estimatingRules';
 import { GlazingSystem } from '@/data/glazingSystems';
-import { Region } from '@/data/regions';
+import { Region } from '@/types';
 import { GlassType } from '@/data/glazingSystems';
 
 export interface CalculatorInput {
@@ -103,7 +103,7 @@ export class GlazingEstimator {
    */
   private static buildParameters(input: CalculatorInput): EstimatingParameters {
     // Base rates
-    const baseLaborRate = input.customLaborRate || baseLaborRates[input.region.id];
+    const baseLaborRate = input.customLaborRate || (baseLaborRates as Record<string, number>)[input.region.id];
     const baseProductivity = baseProductivityRates[input.glazingSystem.id];
     const baseMaterialCost = baseMaterialCosts[input.glazingSystem.id];
     
@@ -111,8 +111,8 @@ export class GlazingEstimator {
     const adjustedMaterialCost = baseMaterialCost * input.glassType.costMultiplier;
     
     // Get multipliers from data (these would be looked up from the data files)
-    const regionalMultiplier = input.region.costMultiplier;
-    const laborMultiplier = input.region.laborMultiplier;
+    const regionalMultiplier = input.region.material_cost_multiplier;
+    const laborMultiplier = input.region.labor_cost_multiplier;
     const wageMultiplier = this.getWageMultiplier(input.projectType);
     const complexityMultiplier = this.getComplexityMultiplier(input.buildingType);
     const accessMultiplier = this.getAccessMultiplier(input.accessCondition);
