@@ -104,8 +104,8 @@ export class GlazingEstimator {
   private static buildParameters(input: CalculatorInput): EstimatingParameters {
     // Base rates
     const baseLaborRate = input.customLaborRate || (baseLaborRates as Record<string, number>)[input.region.id];
-    const baseProductivity = baseProductivityRates[input.glazingSystem.id];
-    const baseMaterialCost = baseMaterialCosts[input.glazingSystem.id];
+    const baseProductivity = (baseProductivityRates as Record<string, number>)[input.glazingSystem.id];
+    const baseMaterialCost = (baseMaterialCosts as Record<string, number>)[input.glazingSystem.id];
     
     // Apply glass type multiplier
     const adjustedMaterialCost = baseMaterialCost * input.glassType.costMultiplier;
