@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
   }
 
   const session = createSession(normalizedPhone, 'sms');
+  // The trigger message IS the first question (location), so step starts at 1.
+  // processStep subtracts 1 for the array index; step=0 would give -1 → "already captured" bug.
+  updateSession(normalizedPhone, { step: 1 });
   const msg = triggerMessage();
 
   try {
