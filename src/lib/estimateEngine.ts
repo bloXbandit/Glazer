@@ -63,12 +63,26 @@ export function runEstimate(input: EstimateInput, liveFactors: LiveDataFactor[] 
   }
 
   // 4. Base costs (before location and condition multipliers)
-  const baseMatCostPerSF = getBaseMaterialCost(input.work_type_id);
-  const adjustedMatCostPerSF = baseMatCostPerSF * glassType.cost_multiplier * region.material_cost_multiplier;
+  let baseMatCostPerSF = 0;
+  let adjustedMatCostPerSF: number;
+  let laborCostPerSF: number;
+  let hoursPerSF: number;
+  let equipCostPerSF: number;
 
-  const hoursPerSF = productivity.hours_per_sf * difficultyMul * accessMultiplier * complexityMul;
-  const laborCostPerSF = hoursPerSF * effectiveLaborRate;
-  const equipCostPerSF = laborCostPerSF * DEFAULTS.equipment_pct_of_labor;
+  if (input.use_manual_pricing && input.manual_material_cost_per_sf && input.manual_labor_cost_per_sf) {
+    // Manual override — bypass all data table lookups
+    adjustedMatCostPerSF = input.manual_material_cost_per_sf;
+    laborCostPerSF = input.manual_labor_cost_per_sf;
+    hoursPerSF = 0; // Unknown when using manual labor cost/SF
+    equipCostPerSF = laborCostPerSF * DEFAULTS.equipment_pct_of_labor;
+  } else {
+    baseMatCostPerSF = getBaseMaterialCost(input.work_type_id);
+    adjustedMatCostPerSF = baseMatCostPerSF * glassType.cost_multiplier * region.material_cost_multiplier;
+
+    hoursPerSF = productivity.hours_per_sf * difficultyMul * accessMultiplier * complexityMul;
+    laborCostPerSF = hoursPerSF * effectiveLaborRate;
+    equipCostPerSF = laborCostPerSF * DEFAULTS.equipment_pct_of_labor;
+  }
 
   const totalMatCost = adjustedMatCostPerSF * input.total_sf;
   const totalLaborCost = laborCostPerSF * input.total_sf;
@@ -187,6 +201,7 @@ export function runEstimate(input: EstimateInput, liveFactors: LiveDataFactor[] 
     grand_total: grandTotal,
     effective_per_sf: effectivePerSF,
     total_labor_hours: totalHours,
+    use_manual_pricing: input.use_manual_pricing,
     market_position: marketPosition,
     benchmark_low: benchmark.price_low,
     benchmark_mid: benchmark.price_mid,

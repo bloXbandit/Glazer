@@ -289,6 +289,9 @@ export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI,
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="bracket-tag">{packet.mode} Estimate</span>
                 <span className="text-[10px] font-black border-2 border-black px-2 py-0.5 bg-[#C4B5FD]">{packet.project_type_label}</span>
+                {result.use_manual_pricing && (
+                  <span className="text-[10px] font-black border-2 border-black px-2 py-0.5 bg-[#FF6B6B]">Manual Pricing</span>
+                )}
               </div>
               <p className="text-xs font-bold text-black/60 mb-3 uppercase tracking-wide">{packet.work_type_name} · {packet.region_name} · {packet.total_sf.toLocaleString()} SF</p>
               <div className="flex items-baseline gap-3">

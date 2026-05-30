@@ -34,6 +34,9 @@ interface FormState {
   custom_profit_pct: number;
   custom_labor_rate: number;
   include_bond: boolean;
+  use_manual_pricing: boolean;
+  manual_material_cost_per_sf: number;
+  manual_labor_cost_per_sf: number;
 }
 
 const DEFAULTS: FormState = {
@@ -54,6 +57,9 @@ const DEFAULTS: FormState = {
   custom_profit_pct: 0.10,
   custom_labor_rate: 0,
   include_bond: false,
+  use_manual_pricing: false,
+  manual_material_cost_per_sf: 0,
+  manual_labor_cost_per_sf: 0,
 };
 
 // ─────────────────────────────────────────────────────────
@@ -139,6 +145,9 @@ export default function HomePage() {
           custom_profit_pct: form.custom_profit_pct,
           custom_labor_rate: form.custom_labor_rate > 0 ? form.custom_labor_rate : undefined,
           include_bond: form.include_bond,
+          use_manual_pricing: form.use_manual_pricing,
+          manual_material_cost_per_sf: form.use_manual_pricing ? form.manual_material_cost_per_sf : undefined,
+          manual_labor_cost_per_sf: form.use_manual_pricing ? form.manual_labor_cost_per_sf : undefined,
           has_fire_rating: form.has_fire_rating,
           has_blast_security: form.has_blast_security,
           has_acoustic_requirement: form.has_acoustic_requirement,
@@ -405,6 +414,9 @@ export default function HomePage() {
                 has_fire_rating: form.has_fire_rating,
                 has_blast_security: form.has_blast_security,
                 has_acoustic_requirement: form.has_acoustic_requirement,
+                use_manual_pricing: form.use_manual_pricing,
+                manual_material_cost_per_sf: form.manual_material_cost_per_sf,
+                manual_labor_cost_per_sf: form.manual_labor_cost_per_sf,
               }}
               workTypeName={selectedWorkType?.name ?? ''}
               onChange={(key, value) => updateForm(key as keyof FormState, value as FormState[keyof FormState])}

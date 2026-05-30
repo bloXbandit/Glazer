@@ -281,6 +281,11 @@ export interface EstimateInput {
   custom_profit_pct?: number;
   custom_labor_rate?: number;
   include_bond?: boolean;
+
+  // Manual pricing overrides (bypass data tables — use when you know your costs)
+  use_manual_pricing?: boolean;
+  manual_material_cost_per_sf?: number;  // $/SF material only
+  manual_labor_cost_per_sf?: number;     // $/SF labor only
   
   // Special requirements
   has_fire_rating?: boolean;
@@ -315,7 +320,10 @@ export interface EstimateResult {
   grand_total: number;
   effective_per_sf: number;
   total_labor_hours: number;
-  
+
+  // Pricing mode
+  use_manual_pricing?: boolean;
+
   // Market position
   market_position: 'Below Market' | 'Competitive' | 'Premium' | 'High Risk / Over Market';
   benchmark_low: number;

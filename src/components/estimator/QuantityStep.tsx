@@ -1,5 +1,5 @@
 'use client';
-import { SquareStack, Hash, FlaskConical, Flame, Shield, Volume2, Zap, Info } from 'lucide-react';
+import { SquareStack, Hash, FlaskConical, Flame, Shield, Volume2, Zap, Info, DollarSign } from 'lucide-react';
 import { glassTypes } from '@/data/glassTypes';
 
 interface QuantityFormState {
@@ -10,6 +10,9 @@ interface QuantityFormState {
   has_fire_rating: boolean;
   has_blast_security: boolean;
   has_acoustic_requirement: boolean;
+  use_manual_pricing: boolean;
+  manual_material_cost_per_sf: number;
+  manual_labor_cost_per_sf: number;
 }
 
 interface QuantityStepProps {
@@ -50,6 +53,70 @@ export default function QuantityStep({ values, workTypeName, onChange }: Quantit
           {values.mode === 'Quick' ? 'Rough order-of-magnitude. Useful for early budget pricing.' : 'Full multiplier stack. Suitable for competitive bid submissions.'}
         </p>
       </div>
+
+      {/* Manual pricing toggle */}
+      <div>
+        <button
+          onClick={() => onChange('use_manual_pricing', !values.use_manual_pricing)}
+          className="relative w-full text-left group outline-none"
+        >
+          <div className="absolute inset-0 border-3 border-black transition-all duration-150
+            group-hover:translate-x-[2px] group-hover:translate-y-[2px]"
+            style={{ border:'3px solid #000', background: values.use_manual_pricing ? '#FF6B6B' : '#000' }} />
+          <div className={`relative border-3 border-black p-3 transition-all duration-150
+            group-hover:-translate-x-[2px] group-hover:-translate-y-[2px]
+            ${values.use_manual_pricing ? 'bg-[#FFFDF5]' : 'bg-white'}`}
+            style={{ border:'3px solid #000' }}>
+            <div className="flex items-center gap-2">
+              <span className={`w-7 h-7 flex items-center justify-center border-2 border-black
+                ${values.use_manual_pricing ? 'bg-black text-[#FFD93D]' : 'bg-white text-black'}`}>
+                <DollarSign size={16} strokeWidth={3} />
+              </span>
+              <div className="flex-1">
+                <p className="text-xs font-black uppercase tracking-wide">
+                  {values.use_manual_pricing ? 'Manual Pricing ON — Auto lookups disabled' : 'Use Manual Pricing Override'}
+                </p>
+                <p className="text-[10px] font-medium text-black/60">
+                  {values.use_manual_pricing
+                    ? 'Enter your own cost/SF below. Data table lookups are skipped.'
+                    : 'Bypass RSMeans data tables — enter known material and labor costs per SF.'}
+                </p>
+              </div>
+              {values.use_manual_pricing && <span className="text-[9px] font-black bg-[#FFD93D] border border-black px-1">ACTIVE</span>}
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {/* Manual pricing inputs (shown when toggle is on) */}
+      {values.use_manual_pricing && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="neo-label flex items-center gap-1.5">
+              <DollarSign size={12} strokeWidth={3} /> Material Cost ($/SF)
+            </label>
+            <input type="number" min={0} step={0.01}
+              value={values.manual_material_cost_per_sf || ''}
+              onChange={e => onChange('manual_material_cost_per_sf', parseFloat(e.target.value) || 0)}
+              placeholder="e.g. 22.00"
+              className="neo-input text-lg"
+            />
+            <p className="text-[10px] font-bold text-black/40 mt-1.5 uppercase tracking-wide">Framing + glass material only — no labor</p>
+          </div>
+          <div>
+            <label className="neo-label flex items-center gap-1.5">
+              <DollarSign size={12} strokeWidth={3} /> Labor Cost ($/SF)
+            </label>
+            <input type="number" min={0} step={0.01}
+              value={values.manual_labor_cost_per_sf || ''}
+              onChange={e => onChange('manual_labor_cost_per_sf', parseFloat(e.target.value) || 0)}
+              placeholder="e.g. 18.00"
+              className="neo-input text-lg"
+            />
+            <p className="text-[10px] font-bold text-black/40 mt-1.5 uppercase tracking-wide">Installed labor cost — all-in including burden</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
