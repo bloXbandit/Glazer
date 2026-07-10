@@ -284,6 +284,8 @@ interface ResultsPanelProps {
   hasAIKey: boolean;
   onReset: () => void;
   estimateInput?: EstimateInput | null;
+  prefillName?: string;
+  prefillPhone?: string;
 }
 
 const TABS: { id: ResultsTab; label: string; icon: ReactNode }[] = [
@@ -292,11 +294,11 @@ const TABS: { id: ResultsTab; label: string; icon: ReactNode }[] = [
   { id: 'sources', label: 'Sources', icon: <Link2 size={13} /> },
 ];
 
-export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI, hasAIKey, onReset, estimateInput }: ResultsPanelProps) {
+export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI, hasAIKey, onReset, estimateInput, prefillName, prefillPhone }: ResultsPanelProps) {
   const { result, confidence, risk_flags, assumptions, exclusions } = packet;
   const [activeTab, setActiveTab] = useState<ResultsTab>('estimate');
-  const [archName, setArchName] = useState('');
-  const [archPhone, setArchPhone] = useState('');
+  const [archName, setArchName] = useState(prefillName ?? '');
+  const [archPhone, setArchPhone] = useState(prefillPhone ?? '');
   const [archState, setArchState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   async function archiveEstimate() {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
   Phone, Mail, MapPin, Clock, ArrowLeft, MessageSquare,
-  Mic, User, Building, ChevronRight, Edit2, Check, X,
+  Mic, User, Building, ChevronRight, Check,
   AlertTriangle, TrendingUp, ExternalLink, Send, Receipt, Printer,
   FileText, Upload, Download, Calculator,
 } from 'lucide-react';
@@ -79,6 +79,9 @@ const DOC_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 const fmtBytes = (n: number) =>
   n >= 1_048_576 ? `${(n / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`;
 
+const editInputCls = 'w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-2.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500';
+const editLabelCls = 'flex items-center text-[10px] text-slate-500 mb-1 uppercase tracking-wide font-medium';
+
 // ── Status config ──────────────────────────────────────────────
 
 const STATUSES = ['new', 'contacted', 'quoted', 'won', 'lost', 'archived'];
@@ -114,50 +117,6 @@ const RETAIL_CATEGORIES = ['residential_window', 'decorative_glass'];
 const SCORE_COLOR = (s: number) =>
   s >= 70 ? 'text-emerald-400' : s >= 45 ? 'text-blue-400' : s >= 25 ? 'text-purple-400' : 'text-amber-400';
 
-// ── Inline edit field ──────────────────────────────────────────
-
-function EditField({
-  label, value, field, onSave,
-}: {
-  label: string;
-  value: string | null | undefined;
-  field: string;
-  onSave: (field: string, value: string) => Promise<void>;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [val, setVal] = useState(value ?? '');
-
-  async function save() {
-    await onSave(field, val);
-    setEditing(false);
-  }
-
-  return (
-    <div className="flex items-start justify-between py-2 border-b border-[#1a1d27] last:border-0">
-      <span className="text-xs text-slate-500 w-36 shrink-0 pt-0.5">{label}</span>
-      {editing ? (
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <input
-            value={val}
-            onChange={e => setVal(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false); }}
-            autoFocus
-            className="flex-1 min-w-0 bg-[#0f1117] border border-brand-500/50 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none"
-          />
-          <button onClick={save} className="text-emerald-400 hover:text-emerald-300"><Check size={13} /></button>
-          <button onClick={() => setEditing(false)} className="text-slate-500 hover:text-slate-300"><X size={13} /></button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-          <span className="text-xs text-slate-200 truncate">{value ?? <span className="text-slate-600 italic">—</span>}</span>
-          <button onClick={() => setEditing(true)} className="text-slate-600 hover:text-slate-400 shrink-0">
-            <Edit2 size={11} />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── Main page ──────────────────────────────────────────────────
 
@@ -179,6 +138,20 @@ export default function ClientDetailPage() {
   const [smsInput, setSmsInput]     = useState('');
   const [smsSending, setSmsSending] = useState(false);
 
+  // Editable client fields — one Save Changes button persists all edits.
+  const EDIT_FIELDS = ['name', 'email', 'project_location', 'project_type_raw', 'glazing_category', 'approx_size', 'timeline', 'notes'] as const;
+  type EditForm = Record<(typeof EDIT_FIELDS)[number], string>;
+  const emptyEdit: EditForm = { name: '', email: '', project_location: '', project_type_raw: '', glazing_category: '', approx_size: '', timeline: '', notes: '' };
+  const [edit, setEdit] = useState<EditForm>(emptyEdit);
+  const [savingEdits, setSavingEdits] = useState(false);
+  const [editsSaved, setEditsSaved] = useState(false);
+
+  const seedEdit = (c: Client) => {
+    const next = { ...emptyEdit };
+    for (const f of EDIT_FIELDS) next[f] = (c[f as keyof Client] as string | null) ?? '';
+    setEdit(next);
+  };
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -186,6 +159,7 @@ export default function ClientDetailPage() {
       if (!res.ok) { setError('Client not found'); setLoading(false); return; }
       const data = await res.json();
       setClient(data.client);
+      seedEdit(data.client);
       setConvos(data.conversations ?? []);
       setQuotes(data.quotes ?? []);
       setDocuments(data.documents ?? []);
@@ -202,8 +176,30 @@ export default function ClientDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ [field]: value }),
     });
-    if (res.ok) { const data = await res.json(); setClient(data); }
+    if (res.ok) { const data = await res.json(); setClient(data); seedEdit(data); }
   }
+
+  async function saveEdits() {
+    if (!client) return;
+    setSavingEdits(true);
+    try {
+      const res = await fetch(`/api/clients/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(edit),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClient(data);
+        seedEdit(data);
+        setEditsSaved(true);
+        setTimeout(() => setEditsSaved(false), 2500);
+      }
+    } catch { /* keep edits in the form for retry */ }
+    setSavingEdits(false);
+  }
+
+  const editDirty = !!client && EDIT_FIELDS.some(f => edit[f] !== ((client[f as keyof Client] as string | null) ?? ''));
 
   async function setStatus(status: string) {
     setStatusSaving(true);
@@ -275,10 +271,14 @@ export default function ClientDetailPage() {
   // Route to the right pricing tool: retail categories → /shop (BGC sheet,
   // prefilled so the quote auto-links to this client); commercial → estimator.
   const isRetail = RETAIL_CATEGORIES.includes(client.glazing_category ?? '');
+  const knownCategory = client.glazing_category && client.glazing_category !== 'unknown' ? client.glazing_category : '';
+  // Carry the client's identity into the quoting tool so the resulting
+  // quote/estimate auto-links back to this record (by phone).
+  const idParams = `clientId=${encodeURIComponent(client.id)}&name=${encodeURIComponent(client.name ?? '')}&phone=${encodeURIComponent(client.phone)}`;
   const quoteHref = isRetail
-    ? `/shop?phone=${encodeURIComponent(client.phone)}&name=${encodeURIComponent(client.name ?? '')}`
-    : `/?workType=${client.glazing_category}&location=${encodeURIComponent(client.project_location ?? '')}`;
-  const quoteLabel = isRetail ? 'Shop Quote' : 'Open in Estimator';
+    ? `/shop?${idParams}`
+    : `/?workType=${knownCategory}&location=${encodeURIComponent(client.project_location ?? '')}&${idParams}`;
+  const quoteLabel = isRetail ? 'Shop Quote' : knownCategory ? 'Start Estimate' : 'Estimate (classify)';
 
   return (
     <div className="min-h-screen bg-[#0a0c10] text-slate-200">
@@ -294,16 +294,14 @@ export default function ClientDetailPage() {
           </h1>
         </div>
 
-        {/* Quote action — retail → /shop, commercial → estimator */}
-        {client.glazing_category && client.glazing_category !== 'unknown' && (
-          <Link
-            href={quoteHref}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 rounded-lg text-xs font-semibold text-white transition-colors"
-          >
-            <ExternalLink size={11} />
-            {quoteLabel}
-          </Link>
-        )}
+        {/* Quote action — always available; routes retail→shop, else→estimator */}
+        <Link
+          href={quoteHref}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 rounded-lg text-xs font-semibold text-white transition-colors shrink-0"
+        >
+          <ExternalLink size={11} />
+          {quoteLabel}
+        </Link>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-4">
@@ -360,50 +358,95 @@ export default function ClientDetailPage() {
           </div>
         </div>
 
-        {/* Contact info */}
-        <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+        {/* Contact — editable */}
+        <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl space-y-3">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
             <User size={11} /> Contact
           </h2>
-          <EditField label="Name"  value={client.name}  field="name"  onSave={saveField} />
-          <EditField label="Email" value={client.email} field="email" onSave={saveField} />
-          <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-slate-500 w-36">Phone</span>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={editLabelCls}>Name</label>
+              <input className={editInputCls} value={edit.name} onChange={e => setEdit(v => ({ ...v, name: e.target.value }))} placeholder="—" />
+            </div>
+            <div>
+              <label className={editLabelCls}>Email</label>
+              <input className={editInputCls} type="email" value={edit.email} onChange={e => setEdit(v => ({ ...v, email: e.target.value }))} placeholder="—" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wide">Phone</span>
             <a href={`tel:${client.phone}`} className="text-xs text-brand-400 hover:underline font-mono flex items-center gap-1">
-              <Phone size={10} />
-              {client.phone}
+              <Phone size={10} /> {client.phone}
             </a>
           </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-slate-500 w-36">Received</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wide">Received</span>
             <span className="text-xs text-slate-400">
               {new Date(client.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
             </span>
           </div>
         </div>
 
-        {/* Project info */}
-        <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+        {/* Project — editable */}
+        <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl space-y-3">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
             <Building size={11} /> Project
           </h2>
-          <EditField label="Location"    value={client.project_location} field="project_location" onSave={saveField} />
-          <EditField label="Project type" value={client.project_type_raw} field="project_type_raw" onSave={saveField} />
-          <div className="flex items-center justify-between py-2 border-b border-[#1a1d27]">
-            <span className="text-xs text-slate-500 w-36">Glazing category</span>
-            <span className="text-xs text-slate-300">
-              {client.glazing_category ? GLAZING_LABELS[client.glazing_category] ?? client.glazing_category : <span className="text-slate-600 italic">—</span>}
-            </span>
-          </div>
-          {newConst && (
-            <div className="flex items-center justify-between py-2 border-b border-[#1a1d27]">
-              <span className="text-xs text-slate-500 w-36">Construction type</span>
-              <span className="text-xs text-slate-300">{newConst}</span>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={editLabelCls}>Location</label>
+              <input className={editInputCls} value={edit.project_location} onChange={e => setEdit(v => ({ ...v, project_location: e.target.value }))} placeholder="—" />
             </div>
-          )}
-          <EditField label="Approx. size" value={client.approx_size} field="approx_size" onSave={saveField} />
-          <EditField label="Timeline"     value={client.timeline}     field="timeline"     onSave={saveField} />
-          <EditField label="Notes"        value={client.notes}        field="notes"        onSave={saveField} />
+            <div>
+              <label className={editLabelCls}>Project type</label>
+              <input className={editInputCls} value={edit.project_type_raw} onChange={e => setEdit(v => ({ ...v, project_type_raw: e.target.value }))} placeholder="—" />
+            </div>
+            <div className="col-span-2">
+              <label className={editLabelCls}>
+                Glazing category
+                <InfoTip dark tip="Sets which quoting tool the Estimate button opens: retail categories (Residential Window, Decorative/Shop) go to the shop quote screen; commercial categories go to the estimator. Classify 'unknown' leads here." />
+              </label>
+              <select className={editInputCls} value={edit.glazing_category} onChange={e => setEdit(v => ({ ...v, glazing_category: e.target.value }))}>
+                <option value="">— Unclassified —</option>
+                {Object.entries(GLAZING_LABELS).filter(([k]) => k !== 'unknown').map(([k, label]) => (
+                  <option key={k} value={k}>{label}</option>
+                ))}
+              </select>
+            </div>
+            {newConst && (
+              <div className="col-span-2 flex items-center justify-between">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wide">Construction type</span>
+                <span className="text-xs text-slate-300">{newConst}</span>
+              </div>
+            )}
+            <div>
+              <label className={editLabelCls}>Approx. size</label>
+              <input className={editInputCls} value={edit.approx_size} onChange={e => setEdit(v => ({ ...v, approx_size: e.target.value }))} placeholder="—" />
+            </div>
+            <div>
+              <label className={editLabelCls}>Timeline</label>
+              <input className={editInputCls} value={edit.timeline} onChange={e => setEdit(v => ({ ...v, timeline: e.target.value }))} placeholder="—" />
+            </div>
+            <div className="col-span-2">
+              <label className={editLabelCls}>Notes</label>
+              <textarea className={`${editInputCls} resize-y`} rows={2} value={edit.notes} onChange={e => setEdit(v => ({ ...v, notes: e.target.value }))} placeholder="—" />
+            </div>
+          </div>
+
+          {/* Save Changes — persists all edits above */}
+          <div className="flex items-center justify-between gap-3 pt-1 border-t border-[#2a2d3a]">
+            <span className="text-[10px] uppercase tracking-wide text-slate-500">
+              {editsSaved ? <span className="text-emerald-400 flex items-center gap-1"><Check size={11} /> Saved</span>
+                : editDirty ? 'Unsaved changes' : 'All changes saved'}
+            </span>
+            <button
+              onClick={saveEdits}
+              disabled={!editDirty || savingEdits}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-white transition-colors"
+            >
+              <Check size={12} /> {savingEdits ? 'Saving…' : 'Save Changes'}
+            </button>
+          </div>
         </div>
 
         {/* Sent estimates */}
@@ -564,27 +607,27 @@ export default function ClientDetailPage() {
           </div>
         )}
 
-        {/* Quote CTA — retail → /shop, commercial → estimator */}
-        {client.glazing_category && client.glazing_category !== 'unknown' && (
-          <div className="p-4 bg-brand-500/5 border border-brand-500/20 rounded-xl flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-200">
-                {isRetail ? 'Ready to quote?' : 'Ready to estimate?'}
-              </p>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {isRetail
-                  ? 'Opens the shop quote screen with this customer prefilled — the saved quote links back here.'
-                  : "Opens the estimator pre-loaded with this project's glazing category and location."}
-              </p>
-            </div>
-            <Link
-              href={quoteHref}
-              className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-500 rounded-xl text-xs font-semibold text-white transition-colors shrink-0 ml-3"
-            >
-              {isRetail ? 'Quote' : 'Estimate'} <ChevronRight size={12} />
-            </Link>
+        {/* Quote CTA — always available; routes retail→shop, else→estimator */}
+        <div className="p-4 bg-brand-500/5 border border-brand-500/20 rounded-xl flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-200">
+              {isRetail ? 'Ready to quote?' : knownCategory ? 'Ready to estimate?' : 'Start an estimate'}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {isRetail
+                ? 'Opens the shop quote screen with this customer prefilled — the saved quote links back here.'
+                : knownCategory
+                  ? "Opens the estimator pre-loaded with this project's scope and location — the finished estimate links back here."
+                  : 'Opens the estimator for this customer. Set a glazing category above to pre-load the scope.'}
+            </p>
           </div>
-        )}
+          <Link
+            href={quoteHref}
+            className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-500 rounded-xl text-xs font-semibold text-white transition-colors shrink-0 ml-3"
+          >
+            {isRetail ? 'Quote' : 'Estimate'} <ChevronRight size={12} />
+          </Link>
+        </div>
       </main>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Calculator, Building, FileText, Phone, Scissors, Menu, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calculator, Building, FileText, Phone, Scissors, Menu, X, User } from 'lucide-react';
 import Link from 'next/link';
 import type { EstimatePacket, EstimateInput, ProjectType, BuildingType, WorkCondition, AccessCondition, EstimateMode, LiveDataFactor } from '@/types';
 import { runEstimate } from '@/lib/estimateEngine';
@@ -96,15 +96,21 @@ export default function HomePage() {
   const [liveDataStatus, setLiveDataStatus] = useState<'idle' | 'loading' | 'fresh' | 'error'>('idle');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [lastInput, setLastInput] = useState<EstimateInput | null>(null);
+  const [clientCtx, setClientCtx] = useState<{ name: string; phone: string } | null>(null);
 
   const workTypes = syncRepo.getWorkTypes();
 
-  // CRM handoff — client cards link here as /?workType=<id>&location=<text>.
-  // Prefill the scope and best-guess region from the AI-captured lead data.
+  // CRM handoff — client cards link here as
+  // /?workType=<id>&location=<text>&clientId=<id>&name=<n>&phone=<p>.
+  // Prefill the scope + region, and carry the client identity so the
+  // finished estimate archives straight back to that record.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const workType = params.get('workType');
     const location = (params.get('location') ?? '').toLowerCase();
+    const cName = params.get('name') ?? '';
+    const cPhone = params.get('phone') ?? '';
+    if (cName || cPhone) setClientCtx({ name: cName, phone: cPhone });
 
     const validWorkType = workType && syncRepo.getWorkTypes().some(wt => wt.id === workType) ? workType : '';
     let regionId = '';
@@ -373,6 +379,25 @@ export default function HomePage() {
       {/* ── Main ───────────────────────────────────────────────── */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
 
+        {/* Estimating-for banner — appears when launched from a client card */}
+        {clientCtx && (clientCtx.name || clientCtx.phone) && (
+          <div className="mb-6 flex items-center justify-between gap-3 border-3 border-black bg-[#C4B5FD] px-4 py-2.5"
+            style={{ border: '3px solid #000', boxShadow: '4px 4px 0 #000' }}>
+            <p className="text-xs font-black uppercase tracking-wide flex items-center gap-2">
+              <User size={13} strokeWidth={3} />
+              Estimating for {clientCtx.name || clientCtx.phone}
+              <span className="hidden sm:inline font-bold normal-case tracking-normal text-black/60">
+                — the finished estimate saves back to this client.
+              </span>
+            </p>
+            <button onClick={() => setClientCtx(null)}
+              className="w-6 h-6 flex items-center justify-center border-2 border-black bg-white hover:bg-[#FF6B6B] transition-colors shrink-0"
+              aria-label="Clear client">
+              <X size={12} strokeWidth={3} />
+            </button>
+          </div>
+        )}
+
         {/* ── Step 1 Hero ─────────────────────────────────────── */}
         {step === 1 && (
           <div className="mb-10">
@@ -551,6 +576,8 @@ export default function HomePage() {
             hasAIKey={hasAIKey}
             onReset={handleReset}
             estimateInput={lastInput}
+            prefillName={clientCtx?.name}
+            prefillPhone={clientCtx?.phone}
           />
         )}
 

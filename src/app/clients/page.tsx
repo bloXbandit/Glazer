@@ -6,7 +6,7 @@ import {
   Phone, Mail, MapPin, Clock, ChevronRight, RefreshCw,
   MessageSquare, Mic, User, Plus, Search, Filter,
   AlertCircle, TrendingUp, Building, CheckCircle2,
-  Upload, PhoneCall, Download, X,
+  Upload, PhoneCall, Download, X, FileText, Folder,
 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -511,6 +511,165 @@ function AddClientModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
   );
 }
 
+// ── Documents manager modal ────────────────────────────────────
+// Pick a client, upload a contract / accepted bid / estimate, and
+// retrieve (download) anything already on file — all wired to the
+// same /api/client-docs store the client detail page uses.
+
+interface DocMeta {
+  id: string; doc_type: string; title: string; filename: string;
+  size_bytes: number; doc_date: string | null; created_at: string;
+}
+
+const DOC_TYPE_OPTS = [
+  { v: 'contract', l: 'Contract' },
+  { v: 'accepted_bid', l: 'Accepted Bid' },
+  { v: 'estimate', l: 'Estimate' },
+  { v: 'other', l: 'Other' },
+];
+
+function DocumentsModal({ clients, onClose }: { clients: Client[]; onClose: () => void }) {
+  const [clientId, setClientId] = useState('');
+  const [docs, setDocs] = useState<DocMeta[]>([]);
+  const [docType, setDocType] = useState('contract');
+  const [title, setTitle] = useState('');
+  const [docDate, setDocDate] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [clientQuery, setClientQuery] = useState('');
+
+  const inputCls = 'w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500';
+  const labelCls = 'block text-[10px] text-slate-500 mb-1 uppercase tracking-wide font-medium';
+
+  const matches = clients.filter(c => {
+    if (!clientQuery) return true;
+    const q = clientQuery.toLowerCase();
+    return (c.name ?? '').toLowerCase().includes(q) || c.phone.includes(q) || (c.project_location ?? '').toLowerCase().includes(q);
+  }).slice(0, 50);
+
+  const loadDocs = useCallback((cid: string) => {
+    if (!cid) { setDocs([]); return; }
+    fetch(`/api/client-docs?client_id=${cid}`)
+      .then(r => (r.ok ? r.json() : { documents: [] }))
+      .then(d => setDocs(d.documents ?? []))
+      .catch(() => setDocs([]));
+  }, []);
+
+  async function upload(file: File) {
+    if (!clientId) { setError('Pick a client first'); return; }
+    setUploading(true); setError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('client_id', clientId);
+      form.append('doc_type', docType);
+      if (title.trim()) form.append('title', title.trim());
+      if (docDate) form.append('doc_date', docDate);
+      const res = await fetch('/api/client-docs', { method: 'POST', body: form });
+      const data = await res.json();
+      if (res.ok && data.ok) { setTitle(''); setDocDate(''); loadDocs(clientId); }
+      else setError(data.error ?? 'Upload failed');
+    } catch { setError('Upload failed'); }
+    setUploading(false);
+  }
+
+  const selectedClient = clients.find(c => c.id === clientId);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-lg mx-4 bg-[#12141c] border border-[#2a2d3a] rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+            <Folder size={14} className="text-brand-400" /> Client Documents
+          </h2>
+          <button onClick={onClose} className="text-slate-600 hover:text-slate-300"><X size={14} /></button>
+        </div>
+
+        {/* Pick client */}
+        <div>
+          <label className={labelCls}>Client</label>
+          {!clientId ? (
+            <>
+              <input className={`${inputCls} mb-2`} placeholder="Search name, phone, or location…"
+                value={clientQuery} onChange={e => setClientQuery(e.target.value)} />
+              <div className="max-h-40 overflow-y-auto border border-[#2a2d3a] rounded-lg divide-y divide-[#1a1d27]">
+                {matches.length === 0 && <p className="text-xs text-slate-600 p-3 text-center">No matching clients</p>}
+                {matches.map(c => (
+                  <button key={c.id} onClick={() => { setClientId(c.id); loadDocs(c.id); }}
+                    className="w-full text-left px-3 py-2 hover:bg-[#1a1d27] transition-colors">
+                    <p className="text-xs text-slate-200">{c.name ?? c.phone}</p>
+                    <p className="text-[10px] text-slate-500">{c.phone}{c.project_location ? ` · ${c.project_location}` : ''}</p>
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between px-3 py-2 bg-[#0f1117] border border-brand-500/40 rounded-lg">
+              <div>
+                <p className="text-xs text-slate-200">{selectedClient?.name ?? selectedClient?.phone}</p>
+                <p className="text-[10px] text-slate-500">{selectedClient?.phone}</p>
+              </div>
+              <button onClick={() => { setClientId(''); setDocs([]); }} className="text-[10px] text-brand-400 hover:underline">Change</button>
+            </div>
+          )}
+        </div>
+
+        {clientId && (
+          <>
+            {/* Existing docs */}
+            <div>
+              <label className={labelCls}>On File ({docs.length})</label>
+              {docs.length === 0 ? (
+                <p className="text-xs text-slate-600 py-2">No documents yet.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {docs.map(d => (
+                    <div key={d.id} className="flex items-center justify-between gap-2 px-3 py-2 bg-[#1a1d27] border border-[#2a2d3a] rounded-lg">
+                      <div className="min-w-0">
+                        <p className="text-xs text-slate-200 truncate flex items-center gap-1.5"><FileText size={11} className="shrink-0 text-slate-500" />{d.title}</p>
+                        <p className="text-[10px] text-slate-500">{DOC_TYPE_OPTS.find(o => o.v === d.doc_type)?.l ?? d.doc_type}{d.doc_date ? ` · ${d.doc_date}` : ''}</p>
+                      </div>
+                      <a href={`/api/client-docs?id=${d.id}`} download className="text-slate-500 hover:text-slate-300 shrink-0" title="Download"><Download size={13} /></a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Upload */}
+            <div className="pt-2 border-t border-[#2a2d3a] space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls}>Type</label>
+                  <select className={inputCls} value={docType} onChange={e => setDocType(e.target.value)}>
+                    {DOC_TYPE_OPTS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Document date</label>
+                  <input type="date" className={inputCls} value={docDate} onChange={e => setDocDate(e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>Title (optional)</label>
+                <input className={inputCls} placeholder="Defaults to filename" value={title} onChange={e => setTitle(e.target.value)} />
+              </div>
+              <label className={`flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed rounded-lg text-xs cursor-pointer transition-colors ${uploading ? 'border-slate-700 text-slate-600' : 'border-[#2a2d3a] text-slate-400 hover:border-brand-500/40 hover:text-slate-200'}`}>
+                <Upload size={12} />
+                {uploading ? 'Uploading…' : 'Choose file (PDF, Word, Excel, image — max 10 MB)'}
+                <input type="file" className="hidden" disabled={uploading}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }} />
+              </label>
+              {error && <p className="text-[10px] text-red-400">{error}</p>}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────
 
 export default function ClientsPage() {
@@ -522,6 +681,7 @@ export default function ClientsPage() {
   const [showTrigger, setShowTrigger]   = useState(false);
   const [showUpload, setShowUpload]     = useState(false);
   const [showAddClient, setShowAddClient] = useState(false);
+  const [showDocs, setShowDocs]         = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -583,6 +743,10 @@ export default function ClientsPage() {
             className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-[#FFD93D] transition-colors"
             style={{ boxShadow:'2px 2px 0 #000' }}>
             <RefreshCw size={12} strokeWidth={3} className={loading ? 'animate-spin' : ''} />
+          </button>
+          <button onClick={() => setShowDocs(true)}
+            className="neo-btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <Folder size={12} strokeWidth={3} /> Documents
           </button>
           <button onClick={() => setShowUpload(true)}
             className="neo-btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs">
@@ -694,6 +858,9 @@ export default function ClientsPage() {
           onClose={() => setShowAddClient(false)}
           onSaved={load}
         />
+      )}
+      {showDocs && (
+        <DocumentsModal clients={clients} onClose={() => setShowDocs(false)} />
       )}
     </div>
   );

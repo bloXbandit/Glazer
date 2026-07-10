@@ -313,7 +313,7 @@ export default function ProcurementIngestion({ onIntelligenceSaved }: Procuremen
     }
   }, [rawText, docType, subName, projectName, projectLocation, bidDate]);
 
-  const [saveResult, setSaveResult] = useState<{ saved: number; region_id: string; price_per_sf: number } | null>(null);
+  const [saveResult, setSaveResult] = useState<{ saved: number; region_id: string; price_per_sf: number; calibrates?: boolean } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSave = useCallback(async () => {
@@ -671,7 +671,10 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
           )}
           {saveResult && (
             <p className="text-xs text-emerald-700 bg-emerald-100 border border-emerald-700/40 px-3 py-2 mb-1">
-              ✓ Saved {saveResult.saved} entr{saveResult.saved === 1 ? 'y' : 'ies'} — ${saveResult.price_per_sf}/SF · region: {saveResult.region_id} · benchmark will recalibrate after 3+ entries
+              ✓ Saved {saveResult.saved} entr{saveResult.saved === 1 ? 'y' : 'ies'} to the Library
+              {saveResult.calibrates === false
+                ? ' — scope only (no total price), so it won\'t affect benchmarks.'
+                : ` — $${saveResult.price_per_sf}/SF · region: ${saveResult.region_id} · benchmark recalibrates after 3+ priced entries.`}
             </p>
           )}
           <div className="flex items-center gap-2 pt-1">

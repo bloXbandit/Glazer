@@ -24,11 +24,11 @@ export async function POST(req: NextRequest) {
   const hasPriceData =
     body.total_price_proposed != null && body.total_sf_proposed != null && body.total_sf_proposed > 0;
 
-  if (!hasPriceData) {
-    return NextResponse.json({ error: 'Entry has no usable price_per_sf (missing total_price or total_sf).' }, { status: 422 });
-  }
-
-  const pricePerSf = body.total_price_proposed! / body.total_sf_proposed!;
+  // Scope-only docs (no total price) still belong in the Library — they hold
+  // inclusions/exclusions/lead times worth keeping. They save with
+  // price_per_sf = 0, which the calibration query (price_per_sf > 0) ignores,
+  // so they never skew benchmarks.
+  const pricePerSf = hasPriceData ? body.total_price_proposed! / body.total_sf_proposed! : 0;
   const regionId   = inferRegionId(body.project_location ?? '');
 
   const savedIds: string[] = [];
@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     saved: savedIds.length,
     ids: savedIds,
     region_id: regionId,
+    calibrates: hasPriceData,
     price_per_sf: Math.round(pricePerSf * 100) / 100,
     work_types: body.glazing_systems,
   });
