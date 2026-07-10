@@ -7,6 +7,7 @@
 import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as fs from 'fs';
+import { scheduleBackup } from '@/lib/backup';
 
 const DB_DIR  = path.join(process.cwd(), 'data');
 const DB_PATH = path.join(DB_DIR, 'intake.db');
@@ -22,6 +23,25 @@ export function getDb(): Database.Database {
   _db.pragma('journal_mode = WAL');
   _db.pragma('foreign_keys = ON');
   runMigrations(_db);
+
+  // Every mutating statement schedules a debounced R2 backup — covers all
+  // present and future write paths without instrumenting each helper.
+  const origPrepare = _db.prepare.bind(_db);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (_db as any).prepare = (sql: string) => {
+    const stmt = origPrepare(sql);
+    if (/^\s*(insert|update|delete|replace)/i.test(sql)) {
+      const origRun = stmt.run.bind(stmt);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (stmt as any).run = (...args: unknown[]) => {
+        const result = origRun(...(args as Parameters<typeof origRun>));
+        scheduleBackup();
+        return result;
+      };
+    }
+    return stmt;
+  };
+
   return _db;
 }
 
