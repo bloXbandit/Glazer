@@ -8,6 +8,7 @@ import {
   Mic, User, Building, ChevronRight, Edit2, Check, X,
   AlertTriangle, TrendingUp, ExternalLink, Send, Receipt, Printer,
 } from 'lucide-react';
+import InfoTip from '@/components/InfoTip';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -406,6 +407,7 @@ export default function ClientDetailPage() {
                 <Send size={11} />
                 {smsSending ? 'Sending…' : 'Re-trigger intake SMS'}
               </button>
+              <InfoTip dark side="top" align="right" tip="Sends the first intake question again and restarts the SMS conversation from step 1 — use when a lead went quiet mid-intake." />
             </div>
           </div>
         )}

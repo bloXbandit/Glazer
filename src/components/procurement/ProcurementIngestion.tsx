@@ -26,24 +26,24 @@ const DOC_TYPE_LABELS: Record<ProcurementDocumentType, string> = {
 };
 
 const PRICE_CONFIDENCE_CONFIG = {
-  proposed:   { label: 'Proposed',   color: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/30' },
-  leveled:    { label: 'Leveled',    color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30' },
-  awarded:    { label: 'Awarded',    color: 'text-emerald-400',bg: 'bg-emerald-500/10',border: 'border-emerald-500/30' },
-  historical: { label: 'Historical', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30' },
-  indicative: { label: 'Indicative', color: 'text-slate-400',  bg: 'bg-slate-500/10',  border: 'border-slate-500/30' },
+  proposed:   { label: 'Proposed',   color: 'text-amber-700',  bg: 'bg-amber-100',  border: 'border-amber-700/40' },
+  leveled:    { label: 'Leveled',    color: 'text-blue-700',   bg: 'bg-blue-100',   border: 'border-blue-700/40' },
+  awarded:    { label: 'Awarded',    color: 'text-emerald-700',bg: 'bg-emerald-100',border: 'border-emerald-700/40' },
+  historical: { label: 'Historical', color: 'text-purple-700', bg: 'bg-purple-100', border: 'border-purple-700/40' },
+  indicative: { label: 'Indicative', color: 'text-black/60',  bg: 'bg-black/5',  border: 'border-black/30' },
 };
 
 const RISK_CONFIG = {
-  Critical: { color: 'text-red-400',    bg: 'bg-red-500/10',    border: 'border-red-500/40',    icon: <AlertCircle size={13} /> },
+  Critical: { color: 'text-red-700',    bg: 'bg-red-100',    border: 'border-red-500/40',    icon: <AlertCircle size={13} /> },
   High:     { color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', icon: <AlertTriangle size={13} /> },
-  Medium:   { color: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/30',  icon: <AlertTriangle size={13} /> },
-  Low:      { color: 'text-slate-400',  bg: 'bg-slate-500/10',  border: 'border-slate-500/20',  icon: <Info size={13} /> },
+  Medium:   { color: 'text-amber-700',  bg: 'bg-amber-100',  border: 'border-amber-700/40',  icon: <AlertTriangle size={13} /> },
+  Low:      { color: 'text-black/60',  bg: 'bg-black/5',  border: 'border-black/20',  icon: <Info size={13} /> },
 };
 
 const PARSE_CONFIDENCE_CONFIG = {
-  high:   { label: 'High Confidence',   color: 'text-emerald-400', dot: 'bg-emerald-400' },
-  medium: { label: 'Medium Confidence', color: 'text-amber-400',   dot: 'bg-amber-400' },
-  low:    { label: 'Low Confidence',    color: 'text-red-400',     dot: 'bg-red-400' },
+  high:   { label: 'High Confidence',   color: 'text-emerald-700', dot: 'bg-emerald-400' },
+  medium: { label: 'Medium Confidence', color: 'text-amber-700',   dot: 'bg-amber-400' },
+  low:    { label: 'Low Confidence',    color: 'text-red-700',     dot: 'bg-red-400' },
 };
 
 const WORK_TYPE_LABELS: Record<string, string> = {
@@ -73,34 +73,34 @@ function SectionCard({ title, icon, count, children }: {
 }) {
   const [open, setOpen] = useState(true);
   return (
-    <div className="border border-[#2a2d3a] rounded-xl overflow-hidden">
+    <div className="border border-black overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[#12141c] hover:bg-[#1a1d27] transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-[#FFFDF5] transition-colors"
       >
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-200">
-          <span className="text-brand-400">{icon}</span>
+        <div className="flex items-center gap-2 text-sm font-medium text-black">
+          <span className="text-[#d63c3c]">{icon}</span>
           {title}
           {count !== undefined && (
-            <span className="ml-1 text-xs text-slate-500 font-normal">({count})</span>
+            <span className="ml-1 text-xs text-black/50 font-normal">({count})</span>
           )}
         </div>
-        {open ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
+        {open ? <ChevronUp size={14} className="text-black/50" /> : <ChevronDown size={14} className="text-black/50" />}
       </button>
-      {open && <div className="p-4 bg-[#0f1117] space-y-2">{children}</div>}
+      {open && <div className="p-4 bg-white space-y-2">{children}</div>}
     </div>
   );
 }
 
 function ScopeList({ items, variant }: { items: string[]; variant: 'include' | 'exclude' }) {
   if (items.length === 0) {
-    return <p className="text-xs text-slate-600 italic">None detected — review document manually.</p>;
+    return <p className="text-xs text-black/40 italic">None detected — review document manually.</p>;
   }
   return (
     <ul className="space-y-1">
       {items.map((item, i) => (
-        <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-          <span className={`mt-0.5 shrink-0 ${variant === 'include' ? 'text-emerald-400' : 'text-red-400'}`}>
+        <li key={i} className="flex items-start gap-2 text-xs text-black/80">
+          <span className={`mt-0.5 shrink-0 ${variant === 'include' ? 'text-emerald-700' : 'text-red-700'}`}>
             {variant === 'include' ? '✓' : '✗'}
           </span>
           {item}
@@ -112,13 +112,13 @@ function ScopeList({ items, variant }: { items: string[]; variant: 'include' | '
 
 function LineItemsTable({ items }: { items: ProcurementLineItem[] }) {
   if (items.length === 0) {
-    return <p className="text-xs text-slate-600 italic">No line items extracted.</p>;
+    return <p className="text-xs text-black/40 italic">No line items extracted.</p>;
   }
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="border-b border-[#2a2d3a] text-slate-500 text-left">
+          <tr className="border-b border-black text-black/50 text-left">
             <th className="pb-2 pr-3 font-medium">Description</th>
             <th className="pb-2 pr-3 font-medium text-right">Qty</th>
             <th className="pb-2 pr-3 font-medium">Unit</th>
@@ -132,18 +132,18 @@ function LineItemsTable({ items }: { items: ProcurementLineItem[] }) {
             const cfg = PRICE_CONFIDENCE_CONFIG[li.price_confidence];
             return (
               <tr key={li.id} className={`border-b border-[#1e2130] ${li.is_alternate ? 'opacity-60' : ''}`}>
-                <td className="py-2 pr-3 text-slate-200">
+                <td className="py-2 pr-3 text-black">
                   {li.description.slice(0, 60)}{li.description.length > 60 ? '…' : ''}
                   {li.is_alternate && (
-                    <span className="ml-1 px-1 py-0.5 text-[10px] bg-slate-700/60 text-slate-400 rounded">ALT</span>
+                    <span className="ml-1 px-1 py-0.5 text-[10px] bg-black/10 text-black/60 rounded">ALT</span>
                   )}
                 </td>
-                <td className="py-2 pr-3 text-right text-slate-300">{li.quantity?.toLocaleString() ?? '—'}</td>
-                <td className="py-2 pr-3 text-slate-400">{li.unit ?? '—'}</td>
-                <td className="py-2 pr-3 text-right text-slate-300">
+                <td className="py-2 pr-3 text-right text-black/80">{li.quantity?.toLocaleString() ?? '—'}</td>
+                <td className="py-2 pr-3 text-black/60">{li.unit ?? '—'}</td>
+                <td className="py-2 pr-3 text-right text-black/80">
                   {li.unit_price !== undefined ? `$${li.unit_price.toFixed(0)}` : '—'}
                 </td>
-                <td className="py-2 pr-3 text-right font-medium text-slate-100">
+                <td className="py-2 pr-3 text-right font-medium text-black">
                   {li.extended_price !== undefined ? fmt(li.extended_price) : '—'}
                 </td>
                 <td className="py-2">
@@ -162,20 +162,20 @@ function LineItemsTable({ items }: { items: ProcurementLineItem[] }) {
 
 function LeadTimesList({ items }: { items: LeadTimeEntry[] }) {
   if (items.length === 0) {
-    return <p className="text-xs text-slate-600 italic">No lead times detected.</p>;
+    return <p className="text-xs text-black/40 italic">No lead times detected.</p>;
   }
   return (
     <div className="space-y-2">
       {items.map((lt, i) => (
-        <div key={i} className="flex items-start gap-3 p-2 bg-[#12141c] rounded-lg border border-[#2a2d3a]">
-          <Clock size={13} className="text-brand-400 mt-0.5 shrink-0" />
+        <div key={i} className="flex items-start gap-3 p-2 bg-white border border-black">
+          <Clock size={13} className="text-[#d63c3c] mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-slate-200 font-medium">{lt.item}</p>
-            <p className="text-xs text-brand-300 mt-0.5">
+            <p className="text-xs text-black font-medium">{lt.item}</p>
+            <p className="text-xs text-black mt-0.5">
               {lt.weeks_min}–{lt.weeks_max ?? lt.weeks_typical} weeks{' '}
-              <span className="text-slate-500">{lt.clock_start}</span>
+              <span className="text-black/50">{lt.clock_start}</span>
             </p>
-            {lt.notes && <p className="text-xs text-slate-500 mt-0.5">{lt.notes}</p>}
+            {lt.notes && <p className="text-xs text-black/50 mt-0.5">{lt.notes}</p>}
           </div>
         </div>
       ))}
@@ -185,26 +185,26 @@ function LeadTimesList({ items }: { items: LeadTimeEntry[] }) {
 
 function AccessList({ items }: { items: AccessAssumption[] }) {
   if (items.length === 0) {
-    return <p className="text-xs text-slate-600 italic">No access assumptions detected.</p>;
+    return <p className="text-xs text-black/40 italic">No access assumptions detected.</p>;
   }
   return (
     <div className="space-y-2">
       {items.map((a, i) => (
-        <div key={i} className="flex items-start gap-3 p-2 bg-[#12141c] rounded-lg border border-[#2a2d3a]">
-          <Wrench size={13} className="text-slate-400 mt-0.5 shrink-0" />
+        <div key={i} className="flex items-start gap-3 p-2 bg-white border border-black">
+          <Wrench size={13} className="text-black/60 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-200 font-medium capitalize">{a.method}</span>
-              {a.floor_range && <span className="text-xs text-slate-500">{a.floor_range}</span>}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded border ${a.included_in_price ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/20'}`}>
+              <span className="text-xs text-black font-medium capitalize">{a.method}</span>
+              {a.floor_range && <span className="text-xs text-black/50">{a.floor_range}</span>}
+              <span className={`text-[10px] px-1.5 py-0.5 rounded border ${a.included_in_price ? 'bg-emerald-100 text-emerald-700 border-emerald-700/40' : 'bg-black/5 text-black/60 border-black/20'}`}>
                 {a.included_in_price ? 'Included' : 'By Others'}
               </span>
-              <span className="text-[10px] text-slate-500 capitalize">by {a.provided_by}</span>
+              <span className="text-[10px] text-black/50 capitalize">by {a.provided_by}</span>
             </div>
             {a.assumptions_stated.length > 0 && (
               <ul className="mt-1 space-y-0.5">
                 {a.assumptions_stated.map((s, j) => (
-                  <li key={j} className="text-xs text-slate-500">• {s}</li>
+                  <li key={j} className="text-xs text-black/50">• {s}</li>
                 ))}
               </ul>
             )}
@@ -218,7 +218,7 @@ function AccessList({ items }: { items: AccessAssumption[] }) {
 function RiskFlagsList({ flags }: { flags: ProcurementRiskFlag[] }) {
   if (flags.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-xs text-emerald-400">
+      <div className="flex items-center gap-2 text-xs text-emerald-700">
         <CheckCircle2 size={13} /> No risks flagged.
       </div>
     );
@@ -228,19 +228,19 @@ function RiskFlagsList({ flags }: { flags: ProcurementRiskFlag[] }) {
       {flags.map(flag => {
         const cfg = RISK_CONFIG[flag.severity];
         return (
-          <div key={flag.id} className={`p-3 rounded-lg border ${cfg.bg} ${cfg.border}`}>
+          <div key={flag.id} className={`p-3 border ${cfg.bg} ${cfg.border}`}>
             <div className="flex items-start gap-2">
               <span className={`mt-0.5 shrink-0 ${cfg.color}`}>{cfg.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className={`text-xs font-semibold ${cfg.color}`}>{flag.severity}</span>
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wide">{flag.category.replace(/_/g, ' ')}</span>
+                  <span className="text-[10px] text-black/50 uppercase tracking-wide">{flag.category.replace(/_/g, ' ')}</span>
                 </div>
-                <p className="text-xs text-slate-200">{flag.description}</p>
+                <p className="text-xs text-black">{flag.description}</p>
                 {flag.source_text && (
-                  <p className="text-xs text-slate-500 italic mt-1">"{flag.source_text}"</p>
+                  <p className="text-xs text-black/50 italic mt-1">"{flag.source_text}"</p>
                 )}
-                <p className="text-xs text-slate-400 mt-1.5 border-l-2 border-slate-600 pl-2">
+                <p className="text-xs text-black/60 mt-1.5 border-l-2 border-black/40 pl-2">
                   {flag.recommendation}
                 </p>
               </div>
@@ -357,19 +357,19 @@ export default function ProcurementIngestion({ onIntelligenceSaved }: Procuremen
   return (
     <div className="space-y-5">
       {/* ── Input form ── */}
-      <div className="bg-[#12141c] border border-[#2a2d3a] rounded-2xl p-5 space-y-4">
+      <div className="bg-white border border-black rounded-2xl p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
-          <Upload size={15} className="text-brand-400" />
-          <h2 className="text-sm font-semibold text-slate-200">Paste Procurement Document</h2>
+          <Upload size={15} className="text-[#d63c3c]" />
+          <h2 className="text-sm font-semibold text-black">Paste Procurement Document</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-2">
-            <label className="text-xs text-slate-500 mb-1 block">Document Type</label>
+            <label className="text-xs text-black/50 mb-1 block">Document Type</label>
             <select
               value={docType}
               onChange={e => setDocType(e.target.value as ProcurementDocumentType)}
-              className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+              className="w-full bg-white border border-black px-3 py-2 text-xs text-black focus:outline-none focus:border-black focus:bg-[#FFD93D]/20"
             >
               {Object.entries(DOC_TYPE_LABELS).map(([v, l]) => (
                 <option key={v} value={v}>{l}</option>
@@ -378,52 +378,52 @@ export default function ProcurementIngestion({ onIntelligenceSaved }: Procuremen
           </div>
 
           <div>
-            <label className="text-xs text-slate-500 mb-1 block">Subcontractor Name</label>
+            <label className="text-xs text-black/50 mb-1 block">Subcontractor Name</label>
             <input
               type="text"
               value={subName}
               onChange={e => setSubName(e.target.value)}
               placeholder="Optional"
-              className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500"
+              className="w-full bg-white border border-black px-3 py-2 text-xs text-black placeholder-black/35 focus:outline-none focus:border-black focus:bg-[#FFD93D]/20"
             />
           </div>
 
           <div>
-            <label className="text-xs text-slate-500 mb-1 block">Bid Date</label>
+            <label className="text-xs text-black/50 mb-1 block">Bid Date</label>
             <input
               type="date"
               value={bidDate}
               onChange={e => setBidDate(e.target.value)}
-              className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+              className="w-full bg-white border border-black px-3 py-2 text-xs text-black focus:outline-none focus:border-black focus:bg-[#FFD93D]/20"
             />
           </div>
 
           <div className="col-span-2">
-            <label className="text-xs text-slate-500 mb-1 block">Project Name</label>
+            <label className="text-xs text-black/50 mb-1 block">Project Name</label>
             <input
               type="text"
               value={projectName}
               onChange={e => setProjectName(e.target.value)}
               placeholder="Optional"
-              className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500"
+              className="w-full bg-white border border-black px-3 py-2 text-xs text-black placeholder-black/35 focus:outline-none focus:border-black focus:bg-[#FFD93D]/20"
             />
           </div>
 
           <div className="col-span-2">
-            <label className="text-xs text-slate-500 mb-1 block">Project Location</label>
+            <label className="text-xs text-black/50 mb-1 block">Project Location</label>
             <input
               type="text"
               value={projectLocation}
               onChange={e => setProjectLocation(e.target.value)}
               placeholder="e.g. Washington, D.C."
-              className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500"
+              className="w-full bg-white border border-black px-3 py-2 text-xs text-black placeholder-black/35 focus:outline-none focus:border-black focus:bg-[#FFD93D]/20"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-xs text-slate-500 mb-1 block">
-            Document Text <span className="text-slate-600">(paste full proposal, bid tab, or scope document)</span>
+          <label className="text-xs text-black/50 mb-1 block">
+            Document Text <span className="text-black/40">(paste full proposal, bid tab, or scope document)</span>
           </label>
           <textarea
             value={rawText}
@@ -438,18 +438,18 @@ Examples:
 • RFQ response with lead times and warranty terms
 
 The system will extract: scope inclusions/exclusions, line items, lead times, mobilization, access assumptions, warranty, and procurement risks.`}
-            className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 font-mono resize-y focus:outline-none focus:border-brand-500 leading-relaxed"
+            className="w-full bg-white border border-black px-4 py-3 text-xs text-black placeholder-black/35 font-mono resize-y focus:outline-none focus:border-black focus:bg-[#FFD93D]/20 leading-relaxed"
           />
           <div className="flex items-center justify-between mt-1">
-            <span className="text-xs text-slate-600">{rawText.length.toLocaleString()} / 30,000 chars</span>
+            <span className="text-xs text-black/40">{rawText.length.toLocaleString()} / 30,000 chars</span>
             {rawText.length > 25_000 && (
-              <span className="text-xs text-amber-400">Approaching limit — document will be truncated for AI pass</span>
+              <span className="text-xs text-amber-700">Approaching limit — document will be truncated for AI pass</span>
             )}
           </div>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-400">
+          <div className="flex items-center gap-2 p-3 bg-red-100 border border-red-700/40 text-xs text-red-700">
             <AlertCircle size={13} /> {error}
           </div>
         )}
@@ -457,7 +457,7 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
         <button
           onClick={handleParse}
           disabled={loading || rawText.trim().length < 20}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm font-semibold text-white transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF6B6B] hover:bg-[#ff8585] disabled:opacity-40 disabled:cursor-not-allowed text-sm font-semibold text-white transition-colors"
         >
           {loading ? (
             <>
@@ -477,21 +477,21 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
       {result && (
         <div className="space-y-4">
           {/* Header bar */}
-          <div className="flex items-start justify-between gap-3 p-4 bg-[#12141c] border border-[#2a2d3a] rounded-2xl">
+          <div className="flex items-start justify-between gap-3 p-4 bg-white border border-black rounded-2xl">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <FileText size={14} className="text-brand-400" />
-                <span className="text-sm font-semibold text-slate-100 truncate">
+                <FileText size={14} className="text-[#d63c3c]" />
+                <span className="text-sm font-semibold text-black truncate">
                   {result.project_name ?? 'Unnamed Project'}
                 </span>
                 {result.subcontractor_name && (
-                  <span className="text-xs text-slate-500">— {result.subcontractor_name}</span>
+                  <span className="text-xs text-black/50">— {result.subcontractor_name}</span>
                 )}
               </div>
               <div className="flex items-center gap-2 flex-wrap text-xs">
-                <span className="text-slate-500">{DOC_TYPE_LABELS[result.document_type]}</span>
-                {result.project_location && <span className="text-slate-500">· {result.project_location}</span>}
-                {result.bid_date && <span className="text-slate-500">· {result.bid_date}</span>}
+                <span className="text-black/50">{DOC_TYPE_LABELS[result.document_type]}</span>
+                {result.project_location && <span className="text-black/50">· {result.project_location}</span>}
+                {result.bid_date && <span className="text-black/50">· {result.bid_date}</span>}
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -505,7 +505,7 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
                 {PRICE_CONFIDENCE_CONFIG[result.price_confidence].label}
               </div>
               {aiEnhanced && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-purple-500/10 border border-purple-500/30 text-purple-400">
+                <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-purple-100 border border-purple-700/40 text-purple-700">
                   <Zap size={10} /> AI Enhanced
                 </span>
               )}
@@ -513,7 +513,7 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
           </div>
 
           {note && (
-            <div className="flex items-center gap-2 p-2.5 bg-slate-500/10 border border-slate-500/20 rounded-lg text-xs text-slate-400">
+            <div className="flex items-center gap-2 p-2.5 bg-black/5 border border-black/20 text-xs text-black/60">
               <Info size={12} /> {note}
             </div>
           )}
@@ -526,12 +526,12 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
               { label: 'Total Price', value: result.total_price_proposed ? fmt(result.total_price_proposed) : '—', icon: <DollarSign size={12} /> },
               { label: 'Risks', value: `${result.risks.length} (${result.risks.filter(r => r.severity === 'Critical' || r.severity === 'High').length} high)`, icon: <Shield size={12} /> },
             ].map(stat => (
-              <div key={stat.label} className="p-3 bg-[#12141c] border border-[#2a2d3a] rounded-xl">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
-                  <span className="text-brand-400">{stat.icon}</span>
+              <div key={stat.label} className="p-3 bg-white border border-black">
+                <div className="flex items-center gap-1.5 text-xs text-black/50 mb-1">
+                  <span className="text-[#d63c3c]">{stat.icon}</span>
                   {stat.label}
                 </div>
-                <p className="text-sm font-semibold text-slate-100 truncate">{stat.value}</p>
+                <p className="text-sm font-semibold text-black truncate">{stat.value}</p>
               </div>
             ))}
           </div>
@@ -586,46 +586,46 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
             <SectionCard title="F&I Breakdown" icon={<Wrench size={13} />}>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Material by</span>
-                  <span className="text-slate-200 capitalize">{result.furnish_install.material_by}</span>
+                  <span className="text-black/50">Material by</span>
+                  <span className="text-black capitalize">{result.furnish_install.material_by}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Install by</span>
-                  <span className="text-slate-200 capitalize">{result.furnish_install.install_by}</span>
+                  <span className="text-black/50">Install by</span>
+                  <span className="text-black capitalize">{result.furnish_install.install_by}</span>
                 </div>
                 {result.furnish_install.material_percentage !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Split</span>
-                    <span className="text-slate-200">
+                    <span className="text-black/50">Split</span>
+                    <span className="text-black">
                       {result.furnish_install.material_percentage}% mat / {result.furnish_install.labor_percentage}% labor
                     </span>
                   </div>
                 )}
-                <p className="text-slate-500 pt-1 border-t border-[#2a2d3a]">{result.furnish_install.notes}</p>
+                <p className="text-black/50 pt-1 border-t border-black">{result.furnish_install.notes}</p>
               </div>
             </SectionCard>
 
             <SectionCard title="Mobilization" icon={<Truck size={13} />}>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Included</span>
-                  <span className={result.mobilization.included ? 'text-emerald-400' : 'text-amber-400'}>
+                  <span className="text-black/50">Included</span>
+                  <span className={result.mobilization.included ? 'text-emerald-700' : 'text-amber-700'}>
                     {result.mobilization.included ? 'Yes' : 'No / Unconfirmed'}
                   </span>
                 </div>
                 {result.mobilization.mob_cost !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Mob cost</span>
-                    <span className="text-slate-200">{fmt(result.mobilization.mob_cost)}</span>
+                    <span className="text-black/50">Mob cost</span>
+                    <span className="text-black">{fmt(result.mobilization.mob_cost)}</span>
                   </div>
                 )}
                 {result.mobilization.trips_assumed !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Trips assumed</span>
-                    <span className="text-slate-200">{result.mobilization.trips_assumed}</span>
+                    <span className="text-black/50">Trips assumed</span>
+                    <span className="text-black">{result.mobilization.trips_assumed}</span>
                   </div>
                 )}
-                <p className="text-slate-500 pt-1 border-t border-[#2a2d3a]">{result.mobilization.notes}</p>
+                <p className="text-black/50 pt-1 border-t border-black">{result.mobilization.notes}</p>
               </div>
             </SectionCard>
           </div>
@@ -639,27 +639,27 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
             <SectionCard title="Warranty" icon={<Shield size={13} />}>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Duration</span>
-                  <span className="text-slate-200 font-medium">{result.warranty.years}-year</span>
+                  <span className="text-black/50">Duration</span>
+                  <span className="text-black font-medium">{result.warranty.years}-year</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Scope</span>
-                  <span className="text-slate-200">{result.warranty.scope}</span>
+                  <span className="text-black/50">Scope</span>
+                  <span className="text-black">{result.warranty.scope}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Labor included</span>
-                  <span className={result.warranty.labor_included ? 'text-emerald-400' : 'text-amber-400'}>
+                  <span className="text-black/50">Labor included</span>
+                  <span className={result.warranty.labor_included ? 'text-emerald-700' : 'text-amber-700'}>
                     {result.warranty.labor_included ? 'Yes' : 'No'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Glass breakage excluded</span>
-                  <span className={result.warranty.glass_breakage_excluded ? 'text-amber-400' : 'text-emerald-400'}>
+                  <span className="text-black/50">Glass breakage excluded</span>
+                  <span className={result.warranty.glass_breakage_excluded ? 'text-amber-700' : 'text-emerald-700'}>
                     {result.warranty.glass_breakage_excluded ? 'Yes — excluded' : 'No exclusion noted'}
                   </span>
                 </div>
                 {result.warranty.notes && (
-                  <p className="text-slate-500 pt-1 border-t border-[#2a2d3a]">{result.warranty.notes}</p>
+                  <p className="text-black/50 pt-1 border-t border-black">{result.warranty.notes}</p>
                 )}
               </div>
             </SectionCard>
@@ -667,10 +667,10 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
 
           {/* Action bar */}
           {saveError && (
-            <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 mb-1">{saveError}</p>
+            <p className="text-xs text-red-700 bg-red-100 border border-red-700/40 px-3 py-2 mb-1">{saveError}</p>
           )}
           {saveResult && (
-            <p className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 mb-1">
+            <p className="text-xs text-emerald-700 bg-emerald-100 border border-emerald-700/40 px-3 py-2 mb-1">
               ✓ Saved {saveResult.saved} entr{saveResult.saved === 1 ? 'y' : 'ies'} — ${saveResult.price_per_sf}/SF · region: {saveResult.region_id} · benchmark will recalibrate after 3+ entries
             </p>
           )}
@@ -678,20 +678,20 @@ The system will extract: scope inclusions/exclusions, line items, lead times, mo
             <button
               onClick={handleSave}
               disabled={saved}
-              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 disabled:opacity-50 border border-emerald-500/30 rounded-lg text-xs font-medium text-emerald-400 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 disabled:opacity-50 border border-emerald-700/40 text-xs font-medium text-emerald-700 transition-colors"
             >
               <CheckCircle2 size={12} />
               {saved ? 'Saved to Intelligence' : 'Save as Intelligence Entry'}
             </button>
             <button
               onClick={handleDownload}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#12141c] hover:bg-[#1a1d27] border border-[#2a2d3a] rounded-lg text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-[#FFFDF5] border border-black text-xs text-black/60 hover:text-black transition-colors"
             >
               <Download size={12} /> Export JSON
             </button>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#12141c] hover:bg-[#1a1d27] border border-[#2a2d3a] rounded-lg text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-[#FFFDF5] border border-black text-xs text-black/60 hover:text-black transition-colors"
             >
               <Copy size={12} /> Copy JSON
             </button>

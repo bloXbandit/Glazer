@@ -116,6 +116,9 @@ function runMigrations(db: Database.Database) {
   alterSafe(`ALTER TABLE clients ADD COLUMN follow_up_status TEXT`);
   alterSafe(`ALTER TABLE clients ADD COLUMN follow_up_at     TEXT`);
   alterSafe(`ALTER TABLE clients ADD COLUMN source           TEXT NOT NULL DEFAULT 'voice'`);
+  // Full parsed ScopeIntelligence JSON so the procurement Library can
+  // re-render saved entries after reload (flattened rows feed calibration)
+  alterSafe(`ALTER TABLE procurement_intel ADD COLUMN full_json TEXT`);
 }
 
 // ── Types ──────────────────────────────────────────────────────

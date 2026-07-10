@@ -7,6 +7,7 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Printer, Ruler, Hash, Wrench, Circle, AlertTriangle, Scissors, Save, Check, User, Phone } from 'lucide-react';
 import { runShopQuote, getShopGlassProducts } from '@/lib/shopQuote';
+import InfoTip from '@/components/InfoTip';
 import type { ShopQuoteInput, EdgeFinish, RepairLaborType } from '@/lib/shopQuote';
 
 const fmt = (n: number) =>
@@ -183,7 +184,9 @@ export default function ShopQuotePage() {
           {/* Edge finish — only when the product prices polished differently */}
           {!isHeavy && hasPolished && !isRepair && (
             <div>
-              <label className="neo-label">Edge Finish</label>
+              <label className="neo-label">Edge Finish
+                <InfoTip tip="Switches the sell rate: polished edges bill higher on this product (e.g. plate $14 CC vs $16 PE, mirror $16 vs $18). Clean cut is the standard counter cut." />
+              </label>
               <div className="flex gap-0">
                 {([['clean_cut', 'Clean Cut (CC)'], ['polished', 'Polished (PE)']] as const).map(([val, label], i) => (
                   <button key={val} onClick={() => setEdgeFinish(val)}

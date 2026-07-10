@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ScopeIntelligence } from '@/types';
 import { saveIntelEntry, inferRegionId } from '@/lib/calibrationEngine';
+import { getDb } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   let body: ScopeIntelligence;
@@ -49,6 +50,18 @@ export async function POST(req: NextRequest) {
       raw_snippet:      body.raw_text_snippet,
     });
     savedIds.push(id);
+  }
+
+  // Store the complete parsed entry once (on the first row) so the
+  // Library can re-render it after reload; flattened rows feed calibration.
+  if (savedIds.length > 0) {
+    try {
+      getDb()
+        .prepare('UPDATE procurement_intel SET full_json = ? WHERE id = ?')
+        .run(JSON.stringify(body), savedIds[0]);
+    } catch (err) {
+      console.error('[procurement-intel/save] full_json store failed:', err);
+    }
   }
 
   return NextResponse.json({

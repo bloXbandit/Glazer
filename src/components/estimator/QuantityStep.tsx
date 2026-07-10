@@ -1,6 +1,7 @@
 'use client';
 import { SquareStack, Hash, FlaskConical, Flame, Shield, Volume2, Zap, Info, DollarSign } from 'lucide-react';
 import { glassTypes } from '@/data/glassTypes';
+import InfoTip from '@/components/InfoTip';
 
 interface QuantityFormState {
   total_sf: number;
@@ -134,6 +135,7 @@ export default function QuantityStep({ values, workTypeName, onChange }: Quantit
         <div>
           <label className="neo-label flex items-center gap-1.5">
             <Hash size={12} strokeWidth={3} /> Number of Openings / Panels
+            <InfoTip tip="Raises the confidence score, and for BGC sheet products it drives the per-lite math (each lite is billed at minimum 1 sq. ft.)." />
           </label>
           <input type="number" min={0}
             value={values.num_openings || ''}
@@ -160,6 +162,7 @@ export default function QuantityStep({ values, workTypeName, onChange }: Quantit
       <div>
         <label className="neo-label flex items-center gap-1.5">
           <FlaskConical size={12} strokeWidth={3} /> Glass Type
+          <InfoTip tip='Products starting with "BGC" price from the company sheet (all-in shop rates + tax + fuel surcharge). All other glass types price through the commercial RSMeans model with markups.' />
         </label>
         <div className="relative">
           <select

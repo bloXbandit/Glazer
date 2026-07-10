@@ -1,5 +1,6 @@
 'use client';
 import { Percent, DollarSign, Shield } from 'lucide-react';
+import InfoTip from '@/components/InfoTip';
 
 interface MarkupFormState {
   custom_contingency_pct: number;
@@ -89,6 +90,7 @@ export default function MarkupStep({ values, onChange }: MarkupStepProps) {
       <div>
         <label className="neo-label flex items-center gap-1.5">
           <DollarSign size={12} strokeWidth={3} /> Custom Labor Rate Override ($/hr all-in)
+          <InfoTip tip="Overrides ALL wage logic — regional rates, prevailing wage, and Davis-Bacon are skipped when this is set. Leave at 0 to use automatic rates." />
         </label>
         <div className="flex items-center gap-0">
           <input
@@ -114,7 +116,9 @@ export default function MarkupStep({ values, onChange }: MarkupStepProps) {
 
       {/* Bond toggle */}
       <div>
-        <label className="neo-label">Performance &amp; Payment Bond</label>
+        <label className="neo-label">Performance &amp; Payment Bond
+          <InfoTip tip="Adds 1% on top of the fully marked-up contract value. Usually required on public and federal work; skip for private jobs unless the GC demands it." />
+        </label>
         <button
           onClick={() => onChange('include_bond', !values.include_bond)}
           className="relative w-full text-left group outline-none"

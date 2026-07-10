@@ -1,6 +1,7 @@
 'use client';
 import { MapPin, Building2, HardHat, Wrench, ArrowUpSquare } from 'lucide-react';
 import { regions, projectConditionMultipliers } from '@/data/regions';
+import InfoTip from '@/components/InfoTip';
 
 interface ConditionsFormState {
   region_id: string;
@@ -21,7 +22,7 @@ const workConditions = projectConditionMultipliers.filter(c => c.condition_type 
 const accessConditions = projectConditionMultipliers.filter(c => c.condition_type === 'access');
 
 function SelectRow({
-  icon, label, value, onChange, options, hint,
+  icon, label, value, onChange, options, hint, tip,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -29,12 +30,14 @@ function SelectRow({
   onChange: (v: string) => void;
   options: { id: string; label: string; description: string }[];
   hint?: string;
+  tip?: string;
 }) {
   return (
     <div>
       <label className="flex items-center gap-1.5 text-[10px] font-black text-black uppercase tracking-widest mb-2">
         <span className="text-black">{icon}</span>
         {label}
+        {tip && <InfoTip tip={tip} />}
       </label>
       <div className="relative">
         <select
@@ -70,7 +73,8 @@ export default function ConditionsStep({ values, onChange }: ConditionsStepProps
         <SelectRow icon={<HardHat size={13} strokeWidth={3} />} label="Project Type"
           value={values.project_type} onChange={v => onChange('project_type', v)}
           options={projectTypes.map(p => ({ id: p.condition_id, label: p.label, description: p.description }))}
-          hint="Prevailing wage / Davis-Bacon requirements" />
+          hint="Prevailing wage / Davis-Bacon requirements"
+          tip="This changes labor cost significantly: federal work triggers Davis-Bacon wage rates, MD/VA public work triggers state prevailing wages. Private work uses open-shop rates." />
         <SelectRow icon={<Building2 size={13} strokeWidth={3} />} label="Building Type"
           value={values.building_type} onChange={v => onChange('building_type', v)}
           options={buildingTypes.map(b => ({ id: b.condition_id, label: b.label, description: b.description }))}

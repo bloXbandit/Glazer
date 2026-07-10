@@ -7,6 +7,7 @@ import {
 import { useState, type ReactNode } from 'react';
 import type { EstimatePacket, RiskFlag, ConfidenceReport, EstimateResult } from '@/types';
 import NarrativePanel from '@/components/estimator/NarrativePanel';
+import InfoTip from '@/components/InfoTip';
 
 // ─────────────────────────────────────────────────────────
 // Confidence Meter
@@ -88,7 +89,9 @@ function MarketGauge({ result }: { result: EstimateResult }) {
 
   return (
     <div className="border-4 border-black p-4 bg-white" style={{ boxShadow:'6px 6px 0 #000' }}>
-      <p className="text-[10px] font-black uppercase tracking-widest mb-3">Market Position</p>
+      <p className="text-[10px] font-black uppercase tracking-widest mb-3">Market Position
+        <InfoTip tip="Compares your $/SF to regional benchmark ranges. Saving 3+ procurement intel entries for this system + region automatically calibrates these ranges toward real bid data." align="left" />
+      </p>
       <div className="flex items-center gap-2 border-2 border-black px-3 py-2 mb-3 font-black text-sm"
         style={{ background: style.bg }}>
         {style.icon}<span className="uppercase tracking-wide">{result.market_position}</span>
