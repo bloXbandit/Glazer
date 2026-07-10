@@ -64,6 +64,23 @@ const MARKET_STYLE: Record<string, { bg: string; icon: ReactNode }> = {
 };
 
 function MarketGauge({ result }: { result: EstimateResult }) {
+  // Sheet-priced estimates ARE the company's market position — comparing
+  // shop $/sqft rates against commercial installed benchmarks is misleading.
+  if (result.pricing_basis === 'bgc_sheet') {
+    return (
+      <div className="border-4 border-black p-4 bg-white" style={{ boxShadow:'6px 6px 0 #000' }}>
+        <p className="text-[10px] font-black uppercase tracking-widest mb-3">Market Position</p>
+        <div className="flex items-center gap-2 border-2 border-black px-3 py-2 font-black text-sm bg-[#FFD93D]">
+          <CheckCircle2 size={14} strokeWidth={3} />
+          <span className="uppercase tracking-wide">BGC Price Sheet</span>
+        </div>
+        <p className="text-[10px] font-bold text-black/50 mt-2 uppercase tracking-wide">
+          Priced from the company&apos;s own sheet rates — commercial benchmarks don&apos;t apply.
+        </p>
+      </div>
+    );
+  }
+
   const style = MARKET_STYLE[result.market_position] ?? MARKET_STYLE['Competitive'];
   const pct = Math.min(100, Math.max(0,
     ((result.effective_per_sf - result.benchmark_low) / Math.max(1, result.benchmark_high - result.benchmark_low)) * 100

@@ -337,6 +337,7 @@ export interface EstimateResult {
 
   // Pricing mode
   use_manual_pricing?: boolean;
+  pricing_basis?: 'rsmeans' | 'bgc_sheet' | 'manual'; // which pricing authority produced the numbers
 
   // Market position
   market_position: 'Below Market' | 'Competitive' | 'Premium' | 'High Risk / Over Market';

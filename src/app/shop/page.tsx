@@ -30,6 +30,14 @@ export default function ShopQuotePage() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [savedQuoteId, setSavedQuoteId] = useState<string | null>(null);
+  const [recent, setRecent] = useState<{ id: string; glass_name: string; total: number; created_at: string }[]>([]);
+
+  const loadRecent = () =>
+    fetch('/api/shop-quote?recent=8')
+      .then(r => (r.ok ? r.json() : { quotes: [] }))
+      .then(d => setRecent(d.quotes ?? []))
+      .catch(() => {});
+  useEffect(() => { loadRecent(); }, []);
 
   const selected = products.find(p => p.id === glassId);
   const isHeavy = selected?.bgc_pricing?.method === 'cost_plus';
@@ -100,6 +108,7 @@ export default function ShopQuotePage() {
       if (res.ok && data.ok) {
         setSavedQuoteId(data.id);
         setSaveState('saved');
+        loadRecent();
       } else {
         setSaveState('error');
       }
@@ -276,11 +285,11 @@ export default function ShopQuotePage() {
         {/* ── Quote ── */}
         <section>
           {quote ? (
-            <div className="neo-card bg-white p-5 space-y-4">
+            <div className="neo-card neo-slide-in bg-white p-5 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-black/50">Out-the-door price</p>
-                  <p className="text-5xl font-black tabular-nums mt-1">{fmt(quote.total)}</p>
+                  <p key={quote.total} className="text-5xl font-black tabular-nums mt-1 neo-pop">{fmt(quote.total)}</p>
                   {quote.floor_total !== undefined && (
                     <p className="text-xs font-bold text-black/60 mt-1">
                       Floor if customer pushes back (×1.85): <span className="font-black">{fmt(quote.floor_total)}</span>
@@ -385,6 +394,29 @@ export default function ShopQuotePage() {
             </div>
           )}
         </section>
+
+        {/* ── Recent quotes ── */}
+        {recent.length > 0 && (
+          <section className="lg:col-span-2 print:hidden">
+            <p className="neo-label mb-2">Recent Quotes</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {recent.map(q => (
+                <Link key={q.id} href={`/shop/print/${q.id}`}
+                  className="neo-card-sm neo-lift bg-white p-3 block">
+                  <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide truncate">
+                    {q.glass_name.replace('BGC — ', '')}
+                  </p>
+                  <div className="flex items-baseline justify-between mt-1">
+                    <span className="text-lg font-black tabular-nums">{fmt(q.total)}</span>
+                    <span className="text-[9px] font-bold text-black/40 uppercase">
+                      {new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

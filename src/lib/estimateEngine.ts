@@ -220,6 +220,7 @@ export function runEstimate(input: EstimateInput, liveFactors: LiveDataFactor[] 
     effective_per_sf: effectivePerSF,
     total_labor_hours: totalHours,
     use_manual_pricing: input.use_manual_pricing,
+    pricing_basis: bgcCalc ? 'bgc_sheet' : input.use_manual_pricing ? 'manual' : 'rsmeans',
     market_position: marketPosition,
     benchmark_low: benchmark.price_low,
     benchmark_mid: benchmark.price_mid,

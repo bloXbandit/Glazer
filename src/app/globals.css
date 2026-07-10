@@ -32,12 +32,35 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Graph-paper background ── */
+/* ── Spring curve — one tactile feel everywhere ── */
+:root {
+  --neo-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Text selection & caret — on-brand ── */
+::selection { background: #FFD93D; color: #000; }
+input, textarea { caret-color: #FF6B6B; }
+
+/* ── Focus visibility — keyboard users get the full treatment ── */
+:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
+/* ── Graph-paper background — with a slow drift ── */
 .bg-grid {
   background-size: 40px 40px;
   background-image:
     linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
+  animation: grid-drift 60s linear infinite;
+}
+@keyframes grid-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 40px 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-grid { animation: none; }
 }
 
 /* ── Halftone dot background ── */
@@ -87,18 +110,36 @@ body {
 }
 
 @layer components {
-  /* ── Neo card ── */
+  /* ── Neo card — layered shadow: hard black + faint accent echo ── */
   .neo-card {
     background: #FFFFFF;
     border: 4px solid #000000;
     border-radius: 0;
-    box-shadow: 8px 8px 0px 0px #000000;
+    box-shadow:
+      8px 8px 0px 0px #000000,
+      12px 12px 0px 0px rgba(255,107,107,0.25);
+    transition: box-shadow 0.25s var(--neo-spring), transform 0.25s var(--neo-spring);
   }
   .neo-card-sm {
     background: #FFFFFF;
     border: 4px solid #000000;
     border-radius: 0;
-    box-shadow: 4px 4px 0px 0px #000000;
+    box-shadow:
+      4px 4px 0px 0px #000000,
+      7px 7px 0px 0px rgba(196,181,253,0.35);
+    transition: box-shadow 0.25s var(--neo-spring), transform 0.25s var(--neo-spring);
+  }
+
+  /* ── Lift — put this on any clickable card ── */
+  .neo-lift:hover {
+    transform: translate(-2px,-2px) rotate(-0.25deg);
+    box-shadow:
+      7px 7px 0px 0px #000000,
+      11px 11px 0px 0px rgba(255,217,61,0.5);
+  }
+  .neo-lift:active {
+    transform: translate(2px,2px);
+    box-shadow: 1px 1px 0px 0px #000000;
   }
 
   /* ── Neo input ── */
@@ -144,6 +185,15 @@ body {
     background: #FFD93D;
   }
 
+  /* ── Buttons share the spring feel ── */
+  .neo-btn, .neo-btn-yellow, .neo-btn-ghost {
+    transition:
+      transform 0.22s var(--neo-spring),
+      box-shadow 0.22s var(--neo-spring),
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
   /* ── Neo btn primary (red) ── */
   .neo-btn {
     display: inline-flex;
@@ -165,8 +215,11 @@ body {
     transition: transform 0.1s, box-shadow 0.1s;
     user-select: none;
   }
-  .neo-btn:hover  { transform: translate(-1px,-1px); box-shadow: 6px 6px 0px 0px #000; }
-  .neo-btn:active { transform: translate(4px,4px);  box-shadow: none; }
+  .neo-btn:hover {
+    transform: translate(-2px,-2px) rotate(-0.5deg);
+    box-shadow: 6px 6px 0px 0px #000, 9px 9px 0px 0px rgba(255,217,61,0.6);
+  }
+  .neo-btn:active { transform: translate(4px,4px); box-shadow: none; transition-duration: 0.06s; }
 
   /* ── Neo btn secondary (yellow) ── */
   .neo-btn-yellow {
@@ -189,8 +242,11 @@ body {
     transition: transform 0.1s, box-shadow 0.1s;
     user-select: none;
   }
-  .neo-btn-yellow:hover  { transform: translate(-1px,-1px); box-shadow: 6px 6px 0px 0px #000; }
-  .neo-btn-yellow:active { transform: translate(4px,4px);   box-shadow: none; }
+  .neo-btn-yellow:hover {
+    transform: translate(-2px,-2px) rotate(0.5deg);
+    box-shadow: 6px 6px 0px 0px #000, 9px 9px 0px 0px rgba(255,107,107,0.5);
+  }
+  .neo-btn-yellow:active { transform: translate(4px,4px); box-shadow: none; transition-duration: 0.06s; }
 
   /* ── Neo btn ghost (outline) ── */
   .neo-btn-ghost {
@@ -212,8 +268,12 @@ body {
     cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
   }
-  .neo-btn-ghost:hover  { background: #000; color: #FFFDF5; transform: translate(-1px,-1px); box-shadow: 6px 6px 0px 0px #000; }
-  .neo-btn-ghost:active { transform: translate(4px,4px); box-shadow: none; }
+  .neo-btn-ghost:hover  {
+    background: #000; color: #FFFDF5;
+    transform: translate(-2px,-2px);
+    box-shadow: 6px 6px 0px 0px rgba(196,181,253,0.9);
+  }
+  .neo-btn-ghost:active { transform: translate(4px,4px); box-shadow: none; transition-duration: 0.06s; }
 
   /* ── Neo label ── */
   .neo-label {
@@ -226,7 +286,7 @@ body {
     margin-bottom: 0.375rem;
   }
 
-  /* ── Neo badge ── */
+  /* ── Neo badge — sticker that tilts on hover ── */
   .neo-badge {
     display: inline-flex;
     align-items: center;
@@ -238,7 +298,10 @@ body {
     letter-spacing: 0.15em;
     background: #FFD93D;
     color: #000;
+    box-shadow: 2px 2px 0 #000;
+    transition: transform 0.25s var(--neo-spring);
   }
+  .neo-badge:hover { transform: rotate(-3deg) scale(1.06); }
 
   /* ── bracket-tag (keep for backward compat) ── */
   .bracket-tag {
@@ -268,11 +331,29 @@ body {
   .stat-label    { font-size:0.625rem; font-weight:900; text-transform:uppercase; letter-spacing:0.18em; color:#000; }
 }
 
-/* ── Custom scrollbar ── */
-::-webkit-scrollbar        { width:6px; height:6px; }
-::-webkit-scrollbar-track  { background:#FFFDF5; }
-::-webkit-scrollbar-thumb  { background:#000; }
-::-webkit-scrollbar-thumb:hover { background:#333; }
+/* ── Price pop — remount an element (key change) to fire it ── */
+@keyframes neo-pop {
+  0%   { transform: scale(0.94); }
+  55%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+.neo-pop { animation: neo-pop 0.28s var(--neo-spring); }
+
+@keyframes neo-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.neo-slide-in { animation: neo-slide-in 0.25s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .neo-pop, .neo-slide-in { animation: none; }
+}
+
+/* ── Custom scrollbar — chunky, on-brand ── */
+::-webkit-scrollbar        { width:10px; height:10px; }
+::-webkit-scrollbar-track  { background:#FFFDF5; border-left:2px solid #000; }
+::-webkit-scrollbar-thumb  { background:#000; border:2px solid #FFFDF5; }
+::-webkit-scrollbar-thumb:hover { background:#FF6B6B; }
 
 /* ── Slider ── */
 input[type='range'] { accent-color: #FF6B6B; }
