@@ -3,7 +3,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getClient, updateClientStatus, getClientConversations, listShopQuotesByClient, getDb } from '@/lib/db';
+import { getClient, updateClientStatus, getClientConversations, listShopQuotesByClient, listClientDocuments, listEstimatesByClient, getDb } from '@/lib/db';
 
 export async function GET(
   _req: NextRequest,
@@ -26,7 +26,10 @@ export async function GET(
     created_at: q.created_at,
   }));
 
-  return NextResponse.json({ client, conversations, session: session ?? null, quotes });
+  const documents = listClientDocuments(params.id);
+  const estimates = listEstimatesByClient(params.id);
+
+  return NextResponse.json({ client, conversations, session: session ?? null, quotes, documents, estimates });
 }
 
 export async function PATCH(

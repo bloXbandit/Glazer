@@ -104,6 +104,37 @@ function runMigrations(db: Database.Database) {
 
     CREATE INDEX IF NOT EXISTS idx_shop_quotes_client ON shop_quotes(client_id);
 
+    CREATE TABLE IF NOT EXISTS client_documents (
+      id          TEXT PRIMARY KEY,
+      client_id   TEXT NOT NULL REFERENCES clients(id),
+      doc_type    TEXT NOT NULL DEFAULT 'other',  -- contract | accepted_bid | estimate | other
+      title       TEXT NOT NULL,
+      filename    TEXT NOT NULL,
+      mime        TEXT NOT NULL,
+      size_bytes  INTEGER NOT NULL,
+      doc_date    TEXT,               -- date on the document (contract date, bid date)
+      notes       TEXT,
+      data        BLOB NOT NULL,
+      created_at  TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_client_docs_client ON client_documents(client_id);
+
+    CREATE TABLE IF NOT EXISTS estimates (
+      id          TEXT PRIMARY KEY,
+      client_id   TEXT REFERENCES clients(id),
+      work_type   TEXT NOT NULL,
+      region      TEXT NOT NULL,
+      total_sf    REAL NOT NULL,
+      grand_total REAL NOT NULL,
+      input_json  TEXT NOT NULL,   -- EstimateInput as submitted
+      packet_json TEXT NOT NULL,   -- full EstimatePacket — archival record of what went out
+      status      TEXT NOT NULL DEFAULT 'sent',
+      created_at  TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_estimates_client ON estimates(client_id);
+
     CREATE INDEX IF NOT EXISTS idx_clients_phone      ON clients(phone);
     CREATE INDEX IF NOT EXISTS idx_clients_status     ON clients(status);
     CREATE INDEX IF NOT EXISTS idx_sessions_phone     ON intake_sessions(phone);
@@ -406,6 +437,127 @@ export function listRecentShopQuotes(limit = 10): ShopQuoteRow[] {
   return getDb()
     .prepare('SELECT * FROM shop_quotes ORDER BY created_at DESC LIMIT ?')
     .all(limit) as ShopQuoteRow[];
+}
+
+// ── Client document helpers (contracts, accepted bids, misc) ──
+
+export interface ClientDocumentRow {
+  id: string;
+  client_id: string;
+  doc_type: string;
+  title: string;
+  filename: string;
+  mime: string;
+  size_bytes: number;
+  doc_date: string | null;
+  notes: string | null;
+  data: Buffer;
+  created_at: string;
+}
+
+export type ClientDocumentMeta = Omit<ClientDocumentRow, 'data'>;
+
+export function saveClientDocument(data: {
+  client_id: string;
+  doc_type: string;
+  title: string;
+  filename: string;
+  mime: string;
+  doc_date?: string | null;
+  notes?: string | null;
+  buffer: Buffer;
+}): ClientDocumentMeta {
+  const db = getDb();
+  const id = generateId('doc');
+  db.prepare(`
+    INSERT INTO client_documents
+      (id, client_id, doc_type, title, filename, mime, size_bytes, doc_date, notes, data, created_at)
+    VALUES
+      (@id, @client_id, @doc_type, @title, @filename, @mime, @size_bytes, @doc_date, @notes, @data, @created_at)
+  `).run({
+    id,
+    client_id: data.client_id,
+    doc_type: data.doc_type,
+    title: data.title,
+    filename: data.filename,
+    mime: data.mime,
+    size_bytes: data.buffer.length,
+    doc_date: data.doc_date ?? null,
+    notes: data.notes ?? null,
+    data: data.buffer,
+    created_at: new Date().toISOString(),
+  });
+  return db
+    .prepare(`SELECT id, client_id, doc_type, title, filename, mime, size_bytes, doc_date, notes, created_at
+              FROM client_documents WHERE id = ?`)
+    .get(id) as ClientDocumentMeta;
+}
+
+export function listClientDocuments(clientId: string): ClientDocumentMeta[] {
+  return getDb()
+    .prepare(`SELECT id, client_id, doc_type, title, filename, mime, size_bytes, doc_date, notes, created_at
+              FROM client_documents WHERE client_id = ? ORDER BY COALESCE(doc_date, created_at) DESC`)
+    .all(clientId) as ClientDocumentMeta[];
+}
+
+export function getClientDocument(id: string): ClientDocumentRow | undefined {
+  return getDb().prepare('SELECT * FROM client_documents WHERE id = ?').get(id) as ClientDocumentRow | undefined;
+}
+
+// ── Estimate archive helpers ───────────────────────────────────
+
+export interface EstimateRow {
+  id: string;
+  client_id: string | null;
+  work_type: string;
+  region: string;
+  total_sf: number;
+  grand_total: number;
+  input_json: string;
+  packet_json: string;
+  status: string;
+  created_at: string;
+}
+
+export function saveEstimate(data: {
+  client_id?: string | null;
+  work_type: string;
+  region: string;
+  total_sf: number;
+  grand_total: number;
+  input_json: string;
+  packet_json: string;
+}): EstimateRow {
+  const db = getDb();
+  const id = generateId('est');
+  db.prepare(`
+    INSERT INTO estimates
+      (id, client_id, work_type, region, total_sf, grand_total, input_json, packet_json, status, created_at)
+    VALUES
+      (@id, @client_id, @work_type, @region, @total_sf, @grand_total, @input_json, @packet_json, 'sent', @created_at)
+  `).run({
+    id,
+    client_id: data.client_id ?? null,
+    work_type: data.work_type,
+    region: data.region,
+    total_sf: data.total_sf,
+    grand_total: data.grand_total,
+    input_json: data.input_json,
+    packet_json: data.packet_json,
+    created_at: new Date().toISOString(),
+  });
+  return db.prepare('SELECT * FROM estimates WHERE id = ?').get(id) as EstimateRow;
+}
+
+export function listEstimatesByClient(clientId: string): Omit<EstimateRow, 'input_json' | 'packet_json'>[] {
+  return getDb()
+    .prepare(`SELECT id, client_id, work_type, region, total_sf, grand_total, status, created_at
+              FROM estimates WHERE client_id = ? ORDER BY created_at DESC`)
+    .all(clientId) as Omit<EstimateRow, 'input_json' | 'packet_json'>[];
+}
+
+export function getEstimate(id: string): EstimateRow | undefined {
+  return getDb().prepare('SELECT * FROM estimates WHERE id = ?').get(id) as EstimateRow | undefined;
 }
 
 // ── ID generator ───────────────────────────────────────────────

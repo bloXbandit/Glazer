@@ -7,6 +7,7 @@ import {
   Phone, Mail, MapPin, Clock, ArrowLeft, MessageSquare,
   Mic, User, Building, ChevronRight, Edit2, Check, X,
   AlertTriangle, TrendingUp, ExternalLink, Send, Receipt, Printer,
+  FileText, Upload, Download, Calculator,
 } from 'lucide-react';
 import InfoTip from '@/components/InfoTip';
 
@@ -45,6 +46,38 @@ interface ShopQuoteSummary {
   total: number;
   created_at: string;
 }
+
+interface ClientDocMeta {
+  id: string;
+  doc_type: string;
+  title: string;
+  filename: string;
+  mime: string;
+  size_bytes: number;
+  doc_date: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+interface EstimateSummary {
+  id: string;
+  work_type: string;
+  region: string;
+  total_sf: number;
+  grand_total: number;
+  status: string;
+  created_at: string;
+}
+
+const DOC_TYPE_LABELS: Record<string, { label: string; color: string }> = {
+  contract:     { label: 'Contract',     color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
+  accepted_bid: { label: 'Accepted Bid', color: 'text-blue-400 border-blue-500/40 bg-blue-500/10' },
+  estimate:     { label: 'Estimate',     color: 'text-purple-400 border-purple-500/40 bg-purple-500/10' },
+  other:        { label: 'Document',     color: 'text-slate-400 border-slate-500/40 bg-slate-500/10' },
+};
+
+const fmtBytes = (n: number) =>
+  n >= 1_048_576 ? `${(n / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`;
 
 // ── Status config ──────────────────────────────────────────────
 
@@ -133,6 +166,13 @@ export default function ClientDetailPage() {
   const [client, setClient]         = useState<Client | null>(null);
   const [convos, setConvos]         = useState<ConversationMessage[]>([]);
   const [quotes, setQuotes]         = useState<ShopQuoteSummary[]>([]);
+  const [documents, setDocuments]   = useState<ClientDocMeta[]>([]);
+  const [estimates, setEstimates]   = useState<EstimateSummary[]>([]);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docError, setDocError]     = useState('');
+  const [docType, setDocType]       = useState('contract');
+  const [docTitle, setDocTitle]     = useState('');
+  const [docDate, setDocDate]       = useState('');
   const [loading, setLoading]       = useState(true);
   const [statusSaving, setStatusSaving] = useState(false);
   const [error, setError]           = useState('');
@@ -148,6 +188,8 @@ export default function ClientDetailPage() {
       setClient(data.client);
       setConvos(data.conversations ?? []);
       setQuotes(data.quotes ?? []);
+      setDocuments(data.documents ?? []);
+      setEstimates(data.estimates ?? []);
     } catch { setError('Failed to load'); }
     setLoading(false);
   }, [id]);
@@ -182,6 +224,31 @@ export default function ClientDetailPage() {
       if (data.ok) { setSmsInput(''); load(); }
     } catch { /* no-op */ }
     setSmsSending(false);
+  }
+
+  async function uploadDocument(file: File) {
+    if (!client) return;
+    setDocUploading(true);
+    setDocError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('client_id', client.id);
+      form.append('doc_type', docType);
+      if (docTitle.trim()) form.append('title', docTitle.trim());
+      if (docDate) form.append('doc_date', docDate);
+      const res = await fetch('/api/client-docs', { method: 'POST', body: form });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setDocTitle(''); setDocDate('');
+        load();
+      } else {
+        setDocError(data.error ?? 'Upload failed');
+      }
+    } catch {
+      setDocError('Upload failed');
+    }
+    setDocUploading(false);
   }
 
   if (loading) return (
@@ -337,6 +404,91 @@ export default function ClientDetailPage() {
           <EditField label="Approx. size" value={client.approx_size} field="approx_size" onSave={saveField} />
           <EditField label="Timeline"     value={client.timeline}     field="timeline"     onSave={saveField} />
           <EditField label="Notes"        value={client.notes}        field="notes"        onSave={saveField} />
+        </div>
+
+        {/* Sent estimates */}
+        {estimates.length > 0 && (
+          <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <Calculator size={11} /> Sent Estimates ({estimates.length})
+            </h2>
+            <div className="space-y-2">
+              {estimates.map(est => (
+                <div key={est.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2 bg-[#1a1d27] border border-[#2a2d3a] rounded-lg">
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-200 truncate">{est.work_type} · {est.region}</p>
+                    <p className="text-[10px] text-slate-500">
+                      {est.total_sf.toLocaleString()} SF · {new Date(est.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })} · Ref {est.id}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-400 tabular-nums shrink-0">
+                    {est.grand_total.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Documents — contracts, accepted bids, historical files */}
+        <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl space-y-3">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+            <FileText size={11} /> Documents ({documents.length})
+            <InfoTip dark tip="Contracts, accepted bids, and historical files stored on this client — searchable by looking up the client, sorted by document date." />
+          </h2>
+
+          {documents.length > 0 && (
+            <div className="space-y-2">
+              {documents.map(doc => {
+                const dt = DOC_TYPE_LABELS[doc.doc_type] ?? DOC_TYPE_LABELS.other;
+                return (
+                  <div key={doc.id}
+                    className="flex items-center justify-between gap-3 px-3 py-2 bg-[#1a1d27] border border-[#2a2d3a] rounded-lg">
+                    <div className="min-w-0">
+                      <p className="text-xs text-slate-200 truncate">{doc.title}</p>
+                      <p className="text-[10px] text-slate-500">
+                        {doc.doc_date ? `${doc.doc_date} · ` : ''}{fmtBytes(doc.size_bytes)} · {doc.filename}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-medium ${dt.color}`}>{dt.label}</span>
+                      <a href={`/api/client-docs?id=${doc.id}`} download
+                        className="text-slate-500 hover:text-slate-300 transition-colors" title="Download">
+                        <Download size={13} />
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Upload */}
+          <div className="pt-2 border-t border-[#2a2d3a] space-y-2">
+            <div className="flex flex-wrap gap-2">
+              <select value={docType} onChange={e => setDocType(e.target.value)}
+                className="bg-[#0f1117] border border-[#2a2d3a] rounded px-2 py-1.5 text-xs text-slate-300 focus:outline-none">
+                <option value="contract">Contract</option>
+                <option value="accepted_bid">Accepted Bid</option>
+                <option value="estimate">Estimate</option>
+                <option value="other">Other</option>
+              </select>
+              <input value={docTitle} onChange={e => setDocTitle(e.target.value)} placeholder="Title (optional — defaults to filename)"
+                className="flex-1 min-w-[160px] bg-[#0f1117] border border-[#2a2d3a] rounded px-2 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none" />
+              <input type="date" value={docDate} onChange={e => setDocDate(e.target.value)}
+                className="bg-[#0f1117] border border-[#2a2d3a] rounded px-2 py-1.5 text-xs text-slate-300 focus:outline-none" />
+            </div>
+            <label className={`flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed rounded-lg text-xs cursor-pointer transition-colors
+              ${docUploading ? 'border-slate-700 text-slate-600' : 'border-[#2a2d3a] text-slate-400 hover:border-brand-500/40 hover:text-slate-200'}`}>
+              <Upload size={12} />
+              {docUploading ? 'Uploading…' : 'Upload contract / accepted bid / document (PDF, Word, Excel, image — max 10 MB)'}
+              <input type="file" className="hidden" disabled={docUploading}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv"
+                onChange={e => { const f = e.target.files?.[0]; if (f) uploadDocument(f); e.target.value = ''; }} />
+            </label>
+            {docError && <p className="text-[10px] text-red-400">{docError}</p>}
+          </div>
         </div>
 
         {/* Shop quotes */}

@@ -95,6 +95,7 @@ export default function HomePage() {
   const [liveFactors, setLiveFactors] = useState<LiveDataFactor[]>([]);
   const [liveDataStatus, setLiveDataStatus] = useState<'idle' | 'loading' | 'fresh' | 'error'>('idle');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [lastInput, setLastInput] = useState<EstimateInput | null>(null);
 
   const workTypes = syncRepo.getWorkTypes();
 
@@ -199,6 +200,7 @@ export default function HomePage() {
         } catch { /* fall back to static */ }
         const result = runEstimate(input, liveFactors, benchmarkOverride);
         setPacket(result);
+        setLastInput(input);
         setCompletedSteps(prev => Array.from(new Set([...prev, 4, 5])));
         setStep(5);
       } catch (e) {
@@ -548,6 +550,7 @@ export default function HomePage() {
             onGetAI={handleGetAI}
             hasAIKey={hasAIKey}
             onReset={handleReset}
+            estimateInput={lastInput}
           />
         )}
 

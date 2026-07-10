@@ -369,17 +369,20 @@ export default function ProcurementPage() {
           <DetailPanel entry={selected} onClose={() => setSelected(null)} />
         ) : (
           <div className="space-y-5">
-            {/* Authority disclaimer */}
-            <div className="flex items-start gap-2.5 p-3 bg-[#FFD93D]/30 text-xs text-black/70" style={{ border: '2px solid #000', boxShadow: '3px 3px 0 #000' }}>
+            {/* How this feeds pricing — plain language */}
+            <div className="flex items-start gap-2.5 p-3 bg-[#FFD93D]/30 text-xs text-black/80 leading-relaxed" style={{ border: '2px solid #000', boxShadow: '3px 3px 0 #000' }}>
               <Info size={13} className="mt-0.5 shrink-0 text-black" />
               <div>
-                <span className="font-black uppercase tracking-wide text-black">Authority Notice — </span>
-                All entries in this library are classified as{' '}
-                <span className="font-semibold">historical_scope_intelligence</span>, not{' '}
-                <span className="font-semibold">verified_pricing_authority</span>, unless marked{' '}
-                <span className="font-semibold text-emerald-700">Awarded</span>. Proposed and leveled prices
-                inform directional benchmarking only. RSMeans 2024 and confirmed award data govern all
-                cost estimates produced by the estimator engine.
+                <span className="font-black uppercase tracking-wide text-black">How this feeds your pricing — </span>
+                Every bid you save here sharpens the estimator&apos;s <span className="font-bold">market-position gauge</span> —
+                it never changes your costs. Your material, labor, and markup math stays fixed and predictable;
+                what adapts is the &quot;is my price competitive?&quot; comparison. Once{' '}
+                <span className="font-bold">3+ entries</span> exist for a system and region, the benchmark ranges
+                start blending toward real bid data (full weight at 10 entries). Not every entry counts equally:{' '}
+                <span className="font-bold text-emerald-700">Awarded</span> prices — jobs actually won — weigh{' '}
+                <span className="font-bold">3×</span> more than a mere{' '}
+                <span className="font-bold text-amber-700">Proposed</span> bid. In short: deterministic dollars,
+                smarter market context with every document you feed it.
               </div>
             </div>
 

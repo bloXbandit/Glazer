@@ -2,10 +2,10 @@
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle, AlertCircle, Info, CheckCircle2,
   Brain, ChevronDown, ChevronUp, Printer, RotateCcw, DollarSign, Clock, FileText, Eye,
-  BookOpen, Link2
+  BookOpen, Link2, Save, Check
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import type { EstimatePacket, RiskFlag, ConfidenceReport, EstimateResult } from '@/types';
+import type { EstimatePacket, RiskFlag, ConfidenceReport, EstimateResult, EstimateInput } from '@/types';
 import NarrativePanel from '@/components/estimator/NarrativePanel';
 import InfoTip from '@/components/InfoTip';
 
@@ -283,6 +283,7 @@ interface ResultsPanelProps {
   onGetAI: () => void;
   hasAIKey: boolean;
   onReset: () => void;
+  estimateInput?: EstimateInput | null;
 }
 
 const TABS: { id: ResultsTab; label: string; icon: ReactNode }[] = [
@@ -291,9 +292,34 @@ const TABS: { id: ResultsTab; label: string; icon: ReactNode }[] = [
   { id: 'sources', label: 'Sources', icon: <Link2 size={13} /> },
 ];
 
-export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI, hasAIKey, onReset }: ResultsPanelProps) {
+export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI, hasAIKey, onReset, estimateInput }: ResultsPanelProps) {
   const { result, confidence, risk_flags, assumptions, exclusions } = packet;
   const [activeTab, setActiveTab] = useState<ResultsTab>('estimate');
+  const [archName, setArchName] = useState('');
+  const [archPhone, setArchPhone] = useState('');
+  const [archState, setArchState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  async function archiveEstimate() {
+    if (!estimateInput || archState === 'saving' || archState === 'saved') return;
+    setArchState('saving');
+    try {
+      const res = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: estimateInput,
+          packet,
+          customer_name: archName || undefined,
+          customer_phone: archPhone || undefined,
+        }),
+      });
+      const data = await res.json();
+      setArchState(res.ok && data.ok ? 'saved' : 'error');
+    } catch {
+      setArchState('error');
+    }
+  }
+
   const fmt = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   const criticalCount = risk_flags.filter(f => f.severity === 'Critical' || f.severity === 'High').length;
 
@@ -330,6 +356,33 @@ export default function ResultsPanel({ packet, aiCommentary, aiLoading, onGetAI,
               </button>
             </div>
           </div>
+
+          {/* Archive — record of what actually went out, linked to the client */}
+          {estimateInput && (
+            <div className="mt-4 pt-3 border-t-2 border-black/15">
+              <p className="text-[10px] font-black uppercase tracking-widest text-black/50 mb-2">
+                Archive as sent
+                <InfoTip tip="Stores this exact estimate (inputs + full breakdown) as the record of what went out to the customer. Phone links it to their CRM record — same one Grace and shop quotes use." />
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input value={archName} onChange={e => { setArchName(e.target.value); setArchState('idle'); }}
+                  placeholder="Customer name" className="neo-input text-xs flex-1 min-w-[140px] max-w-[220px] py-2" />
+                <input value={archPhone} onChange={e => { setArchPhone(e.target.value); setArchState('idle'); }}
+                  placeholder="Phone (links to CRM)" className="neo-input text-xs flex-1 min-w-[140px] max-w-[220px] py-2" />
+                <button onClick={archiveEstimate} disabled={archState === 'saving' || archState === 'saved'}
+                  className={`flex items-center gap-1.5 px-3 py-2 border-3 border-black text-[11px] font-black uppercase tracking-wide
+                    ${archState === 'saved' ? 'bg-[#C4B5FD]' : 'bg-[#FF6B6B]'}`}
+                  style={{ border: '3px solid #000', boxShadow: '2px 2px 0 #000' }}>
+                  {archState === 'saved'
+                    ? <><Check size={12} strokeWidth={3} /> Archived</>
+                    : archState === 'saving' ? 'Saving…' : <><Save size={12} strokeWidth={3} /> Archive & Send</>}
+                </button>
+                {archState === 'error' && (
+                  <span className="text-[10px] font-black text-[#FF6B6B] uppercase">Save failed — retry</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
