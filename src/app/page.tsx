@@ -1,6 +1,6 @@
 'use client';
-import { useState, useCallback } from 'react';
-import { ChevronRight, ChevronLeft, Calculator, Building, FileText, Phone } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { ChevronRight, ChevronLeft, Calculator, Building, FileText, Phone, Scissors } from 'lucide-react';
 import Link from 'next/link';
 import type { EstimatePacket, EstimateInput, ProjectType, BuildingType, WorkCondition, AccessCondition, EstimateMode, LiveDataFactor } from '@/types';
 import { runEstimate } from '@/lib/estimateEngine';
@@ -96,6 +96,42 @@ export default function HomePage() {
   const [liveDataStatus, setLiveDataStatus] = useState<'idle' | 'loading' | 'fresh' | 'error'>('idle');
 
   const workTypes = syncRepo.getWorkTypes();
+
+  // CRM handoff — client cards link here as /?workType=<id>&location=<text>.
+  // Prefill the scope and best-guess region from the AI-captured lead data.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const workType = params.get('workType');
+    const location = (params.get('location') ?? '').toLowerCase();
+
+    const validWorkType = workType && syncRepo.getWorkTypes().some(wt => wt.id === workType) ? workType : '';
+    let regionId = '';
+    if (location) {
+      const REGION_HINTS: [string, string][] = [
+        ['baltimore', 'baltimore'],
+        ['washington', 'dc'], ['dc', 'dc'],
+        ['montgomery', 'montgomery_county'], ['rockville', 'montgomery_county'],
+        ['bethesda', 'montgomery_county'], ['silver spring', 'montgomery_county'],
+        ['prince george', 'prince_georges'],
+        ['fairfax', 'fairfax'],
+        ['arlington', 'arlington_alexandria'], ['alexandria', 'arlington_alexandria'],
+        ['loudoun', 'loudoun_pw'], ['prince william', 'loudoun_pw'],
+      ];
+      regionId = REGION_HINTS.find(([hint]) => location.includes(hint))?.[1] ?? '';
+    }
+
+    if (validWorkType || regionId) {
+      setForm(f => ({
+        ...f,
+        ...(validWorkType ? { work_type_id: validWorkType } : {}),
+        ...(regionId ? { region_id: regionId } : {}),
+      }));
+      if (validWorkType) {
+        setCompletedSteps([1]);
+        setStep(2); // scope already known from intake — land on conditions
+      }
+    }
+  }, []);
 
   // Fetch live market calibration data (BLS PPI + SAM.gov)
   const fetchLiveData = useCallback(async () => {
@@ -239,6 +275,11 @@ export default function HomePage() {
           {/* Right nav */}
           <div className="flex items-center gap-1 shrink-0">
             <div className="hidden md:flex items-center gap-1">
+              <Link href="/shop"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black bg-[#FFD93D] text-black font-bold text-xs uppercase tracking-wide hover:bg-[#C4B5FD] transition-all duration-100"
+                style={{ boxShadow:'2px 2px 0 #000' }}>
+                <Scissors size={11} strokeWidth={3} /> Shop Quote
+              </Link>
               <Link href="/procurement"
                 className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black bg-white text-black font-bold text-xs uppercase tracking-wide hover:bg-[#C4B5FD] transition-all duration-100"
                 style={{ boxShadow:'2px 2px 0 #000' }}>

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import {
   Phone, Mail, MapPin, Clock, ArrowLeft, MessageSquare,
   Mic, User, Building, ChevronRight, Edit2, Check, X,
-  AlertTriangle, TrendingUp, ExternalLink, Send,
+  AlertTriangle, TrendingUp, ExternalLink, Send, Receipt, Printer,
 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -38,6 +38,13 @@ interface ConversationMessage {
   created_at: string;
 }
 
+interface ShopQuoteSummary {
+  id: string;
+  glass_name: string;
+  total: number;
+  created_at: string;
+}
+
 // ── Status config ──────────────────────────────────────────────
 
 const STATUSES = ['new', 'contacted', 'quoted', 'won', 'lost', 'archived'];
@@ -61,8 +68,14 @@ const GLAZING_LABELS: Record<string, string> = {
   skylight:              'Skylight',
   fire_rated:            'Fire-Rated Glazing',
   blast_security:        'Blast / Security',
+  residential_window:    'Residential Window & Door',
+  decorative_glass:      'Decorative / Shop Glass',
   unknown:               'Unknown / TBD',
 };
+
+// Retail/shop categories quote through /shop (BGC price sheet),
+// not the commercial SF estimator.
+const RETAIL_CATEGORIES = ['residential_window', 'decorative_glass'];
 
 const SCORE_COLOR = (s: number) =>
   s >= 70 ? 'text-emerald-400' : s >= 45 ? 'text-blue-400' : s >= 25 ? 'text-purple-400' : 'text-amber-400';
@@ -118,6 +131,7 @@ export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [client, setClient]         = useState<Client | null>(null);
   const [convos, setConvos]         = useState<ConversationMessage[]>([]);
+  const [quotes, setQuotes]         = useState<ShopQuoteSummary[]>([]);
   const [loading, setLoading]       = useState(true);
   const [statusSaving, setStatusSaving] = useState(false);
   const [error, setError]           = useState('');
@@ -132,6 +146,7 @@ export default function ClientDetailPage() {
       const data = await res.json();
       setClient(data.client);
       setConvos(data.conversations ?? []);
+      setQuotes(data.quotes ?? []);
     } catch { setError('Failed to load'); }
     setLoading(false);
   }, [id]);
@@ -189,6 +204,14 @@ export default function ClientDetailPage() {
     : client.new_construction === 0 ? 'Renovation / Replacement'
     : null;
 
+  // Route to the right pricing tool: retail categories → /shop (BGC sheet,
+  // prefilled so the quote auto-links to this client); commercial → estimator.
+  const isRetail = RETAIL_CATEGORIES.includes(client.glazing_category ?? '');
+  const quoteHref = isRetail
+    ? `/shop?phone=${encodeURIComponent(client.phone)}&name=${encodeURIComponent(client.name ?? '')}`
+    : `/?workType=${client.glazing_category}&location=${encodeURIComponent(client.project_location ?? '')}`;
+  const quoteLabel = isRetail ? 'Shop Quote' : 'Open in Estimator';
+
   return (
     <div className="min-h-screen bg-[#0a0c10] text-slate-200">
       {/* Header */}
@@ -203,14 +226,14 @@ export default function ClientDetailPage() {
           </h1>
         </div>
 
-        {/* Open in Estimator button */}
+        {/* Quote action — retail → /shop, commercial → estimator */}
         {client.glazing_category && client.glazing_category !== 'unknown' && (
           <Link
-            href={`/?workType=${client.glazing_category}&location=${encodeURIComponent(client.project_location ?? '')}`}
+            href={quoteHref}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 rounded-lg text-xs font-semibold text-white transition-colors"
           >
             <ExternalLink size={11} />
-            Open in Estimator
+            {quoteLabel}
           </Link>
         )}
       </header>
@@ -315,6 +338,38 @@ export default function ClientDetailPage() {
           <EditField label="Notes"        value={client.notes}        field="notes"        onSave={saveField} />
         </div>
 
+        {/* Shop quotes */}
+        {quotes.length > 0 && (
+          <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <Receipt size={11} /> Shop Quotes ({quotes.length})
+            </h2>
+            <div className="space-y-2">
+              {quotes.map(q => (
+                <div key={q.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2 bg-[#1a1d27] border border-[#2a2d3a] rounded-lg">
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-200 truncate">{q.glass_name.replace('BGC — ', '')}</p>
+                    <p className="text-[10px] text-slate-500">
+                      {new Date(q.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                      {' · '}Ref {q.id}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-bold text-emerald-400 tabular-nums">
+                      {q.total.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                    </span>
+                    <Link href={`/shop/print/${q.id}`} target="_blank"
+                      className="text-slate-500 hover:text-slate-300 transition-colors" title="Print quote">
+                      <Printer size={13} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Conversation history */}
         {convos.length > 0 && (
           <div className="p-4 bg-[#12141c] border border-[#2a2d3a] rounded-xl space-y-3">
@@ -355,20 +410,24 @@ export default function ClientDetailPage() {
           </div>
         )}
 
-        {/* Open in Estimator CTA */}
+        {/* Quote CTA — retail → /shop, commercial → estimator */}
         {client.glazing_category && client.glazing_category !== 'unknown' && (
           <div className="p-4 bg-brand-500/5 border border-brand-500/20 rounded-xl flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-200">Ready to estimate?</p>
+              <p className="text-xs font-semibold text-slate-200">
+                {isRetail ? 'Ready to quote?' : 'Ready to estimate?'}
+              </p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Opens the estimator pre-loaded with this project's glazing category and location.
+                {isRetail
+                  ? 'Opens the shop quote screen with this customer prefilled — the saved quote links back here.'
+                  : "Opens the estimator pre-loaded with this project's glazing category and location."}
               </p>
             </div>
             <Link
-              href={`/?workType=${client.glazing_category}&location=${encodeURIComponent(client.project_location ?? '')}`}
+              href={quoteHref}
               className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-500 rounded-xl text-xs font-semibold text-white transition-colors shrink-0 ml-3"
             >
-              Estimate <ChevronRight size={12} />
+              {isRetail ? 'Quote' : 'Estimate'} <ChevronRight size={12} />
             </Link>
           </div>
         )}

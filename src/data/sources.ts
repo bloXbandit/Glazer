@@ -482,6 +482,23 @@ export const sources: SourceRecord[] = [
     extracted_facts: [],
     notes: 'Normalized procurement document intelligence. Pricing is historical_scope_intelligence only. Not verified_pricing_authority unless document_type is purchase_order or subcontract_exhibit with confirmed award values.'
   },
+
+  // ----------------------------------------------------------
+  // BGC OWN PRICE SHEET (internal — highest pricing authority)
+  // ----------------------------------------------------------
+  {
+    id: 'src-bgc-pricing-doc',
+    title: 'Baltimore Glass Company, Inc. Products & Pricing (internal price sheet)',
+    url: 'internal://bgc-pricing-document.pdf',
+    publisher: 'Baltimore Glass Company, Inc.',
+    source_type: 'pricing',
+    date_accessed: '2026-07-09',
+    confidence_weight: 1.0,
+    allowed_usage: ['estimate_pricing', 'assumption_text', 'confidence_score'],
+    linked_work_types: ['decorative_glass', 'residential_window', 'interior_partition', 'storefront'],
+    extracted_facts: [],
+    notes: 'The company\'s true shop pricing: glass sqft sell rates, edgework per linear inch, window repair formula (×1.75), heavy glass cost-plus from OBE (×1.13 ×2.0), shapes via Bel Pre, 6% MD sales tax + 5% fuel surcharge (×1.11 shortcut). Data lives in src/data/bgcPricing.ts and glassTypes.ts bgc_pricing fields.'
+  },
 ];
 
 // Lookup helper

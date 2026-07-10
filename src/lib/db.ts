@@ -92,6 +92,18 @@ function runMigrations(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_proc_intel_work_region
       ON procurement_intel(work_type_id, region_id);
 
+    CREATE TABLE IF NOT EXISTS shop_quotes (
+      id          TEXT PRIMARY KEY,
+      client_id   TEXT REFERENCES clients(id),
+      glass_name  TEXT NOT NULL,
+      input_json  TEXT NOT NULL,   -- raw ShopQuoteInput (deterministic replay)
+      result_json TEXT NOT NULL,   -- ShopQuoteResult computed server-side
+      total       REAL NOT NULL,
+      created_at  TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_shop_quotes_client ON shop_quotes(client_id);
+
     CREATE INDEX IF NOT EXISTS idx_clients_phone      ON clients(phone);
     CREATE INDEX IF NOT EXISTS idx_clients_status     ON clients(status);
     CREATE INDEX IF NOT EXISTS idx_sessions_phone     ON intake_sessions(phone);
@@ -339,6 +351,58 @@ export function getClientConversations(clientId: string): ConversationRow[] {
   return getDb()
     .prepare('SELECT * FROM conversations WHERE client_id = ? ORDER BY created_at ASC')
     .all(clientId) as ConversationRow[];
+}
+
+// ── Shop quote helpers ─────────────────────────────────────────
+
+export interface ShopQuoteRow {
+  id: string;
+  client_id: string | null;
+  glass_name: string;
+  input_json: string;   // ShopQuoteInput JSON
+  result_json: string;  // ShopQuoteResult JSON
+  total: number;
+  created_at: string;
+}
+
+export function saveShopQuote(data: {
+  client_id?: string | null;
+  glass_name: string;
+  input_json: string;
+  result_json: string;
+  total: number;
+}): ShopQuoteRow {
+  const db = getDb();
+  const id = generateId('sq');
+  db.prepare(`
+    INSERT INTO shop_quotes (id, client_id, glass_name, input_json, result_json, total, created_at)
+    VALUES (@id, @client_id, @glass_name, @input_json, @result_json, @total, @created_at)
+  `).run({
+    id,
+    client_id: data.client_id ?? null,
+    glass_name: data.glass_name,
+    input_json: data.input_json,
+    result_json: data.result_json,
+    total: data.total,
+    created_at: new Date().toISOString(),
+  });
+  return db.prepare('SELECT * FROM shop_quotes WHERE id = ?').get(id) as ShopQuoteRow;
+}
+
+export function getShopQuote(id: string): ShopQuoteRow | undefined {
+  return getDb().prepare('SELECT * FROM shop_quotes WHERE id = ?').get(id) as ShopQuoteRow | undefined;
+}
+
+export function listShopQuotesByClient(clientId: string): ShopQuoteRow[] {
+  return getDb()
+    .prepare('SELECT * FROM shop_quotes WHERE client_id = ? ORDER BY created_at DESC')
+    .all(clientId) as ShopQuoteRow[];
+}
+
+export function listRecentShopQuotes(limit = 10): ShopQuoteRow[] {
+  return getDb()
+    .prepare('SELECT * FROM shop_quotes ORDER BY created_at DESC LIMIT ?')
+    .all(limit) as ShopQuoteRow[];
 }
 
 // ── ID generator ───────────────────────────────────────────────

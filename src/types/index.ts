@@ -113,6 +113,19 @@ export interface PricingBenchmark {
 // GLASS TYPES
 // ------------------------------------------------------------
 
+// BGC retail/shop pricing (from the BGC Pricing Document).
+// When present on a glass type, the estimate engine prices it with the
+// company's true shop formulas instead of the RSMeans commercial model.
+export interface BgcGlassPricing {
+  method: 'flat_rate' | 'cost_plus';
+  sell_per_sf?: number;            // flat-rate sale $/sqft, clean cut (already marked up)
+  sell_per_sf_polished?: number;   // flat-rate sale $/sqft with polished edges
+  repair_rate_per_sf?: number;     // glass $/sqft in window-repair quotes (defaults to sell_per_sf)
+  repair_labor_per_lite?: number;  // repair labor $ per lite (defaults to $30 push-in vinyl)
+  obe_cost_per_sf?: number;        // cost-plus: Oldcastle cost $/sqft
+  edge_cost_per_inch?: number;     // cost-plus: edging $/linear inch
+}
+
 export interface GlassType {
   id: string;
   name: string;
@@ -122,6 +135,7 @@ export interface GlassType {
   performance_notes: string;
   source_ids: string[];
   applicable_work_types: string[]; // empty = all
+  bgc_pricing?: BgcGlassPricing;   // BGC true shop pricing — engine uses PDF formulas when set
 }
 
 // ------------------------------------------------------------

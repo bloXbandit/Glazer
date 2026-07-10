@@ -100,6 +100,155 @@ export const glassTypes: GlassType[] = [
     source_ids: ['src-rsmeans-2024'],
     applicable_work_types: ['blast_security']
   },
+  // ------------------------------------------------------------
+  // BGC SHOP GLASS PRODUCTS — Baltimore Glass Co. true pricing
+  // Sell rates from the BGC Pricing Document (src-bgc-pricing-doc).
+  // Rates are $/sqft, already marked up; engine applies the exact
+  // shop formulas (see src/data/bgcPricing.ts).
+  // ------------------------------------------------------------
+  {
+    id: 'bgc_ss_3_32',
+    name: 'BGC — 3/32" Single Strength (SS)',
+    description: 'Single-strength glass for windows or IG units. Sells $8/sqft clean-cut or swiped edges.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $8/sqft (min 1 sqft, 2" increments). Window repair: $5/sqft glass + $20 labor ×1.75 markup.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 8, sell_per_sf_polished: 8, repair_rate_per_sf: 5, repair_labor_per_lite: 20 }
+  },
+  {
+    id: 'bgc_ds_1_8',
+    name: 'BGC — 1/8" Double Strength (DS)',
+    description: 'Double-strength glass for windows or IG units. $9/sqft for all 1/8 DS glass.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $9/sqft clean-cut or with edge work. Window repair: $6/sqft glass + $20 labor ×1.75 markup (+$30 putty when required).',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 9, sell_per_sf_polished: 9, repair_rate_per_sf: 6, repair_labor_per_lite: 20 }
+  },
+  {
+    id: 'bgc_plate_3_16_1_4',
+    name: 'BGC — 3/16" / 1/4" Plate',
+    description: 'Plate glass for windows, IGs, and glass tops. $14/sqft clean-cut, $16/sqft polished edges.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $14/sqft CC or $16/sqft with polished edges. Used for glass tops and heavier lites.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window', 'interior_partition', 'storefront'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 14, sell_per_sf_polished: 16 }
+  },
+  {
+    id: 'bgc_mirror',
+    name: 'BGC — Mirror (1/8" / 1/4")',
+    description: 'Mirror glass. $16/sqft clean-cut, $18/sqft polished edge (PE).',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $16/sqft CC or $18/sqft with polished edges, both 1/8" and 1/4" mirror.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'interior_partition'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 16, sell_per_sf_polished: 18 }
+  },
+  {
+    id: 'bgc_lami_1_4',
+    name: 'BGC — 1/4" Clear Laminated',
+    description: 'Clear laminated safety glass, 1/4". $18/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $18/sqft. Safety glazing — holds together on breakage.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window', 'interior_partition', 'storefront'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 18, sell_per_sf_polished: 18 }
+  },
+  {
+    id: 'bgc_lami_1_8',
+    name: 'BGC — 1/8" Clear Laminated',
+    description: 'Clear laminated safety glass, 1/8". $25/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $25/sqft.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 25, sell_per_sf_polished: 25 }
+  },
+  {
+    id: 'bgc_ig_5_8_clear',
+    name: 'BGC — 5/8" Clear Insulated (IG)',
+    description: 'Clear insulated glass unit, double pane, 5/8". $10/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $10/sqft. Window repair: glass + $30 labor (push-in vinyl; $35 wrap-around) ×1.75 markup.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window', 'storefront'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 10, sell_per_sf_polished: 10, repair_labor_per_lite: 30 }
+  },
+  {
+    id: 'bgc_ig_other',
+    name: 'BGC — Other Insulated Glass (IG)',
+    description: 'Insulated glass units other than 5/8" clear (3/8"–1" combinations). $11.50/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $11.50/sqft. IG can be 3/8" to 1" using 3/32 to 1/4 lites with appropriate spacer.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window', 'storefront'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 11.5, sell_per_sf_polished: 11.5, repair_labor_per_lite: 30 }
+  },
+  {
+    id: 'bgc_ig_low_e',
+    name: 'BGC — Low-E Insulated (IG)',
+    description: 'Low-emissivity insulated glass unit. $12/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $12/sqft. Window repair: glass + $30 labor ×1.75 markup.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window', 'storefront'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 12, sell_per_sf_polished: 12, repair_labor_per_lite: 30 }
+  },
+  {
+    id: 'bgc_ig_clear_mullions',
+    name: 'BGC — Clear IG with Mullions (up to 3)',
+    description: 'Clear insulated glass with up to 3 mullions. $13/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $13/sqft with up to 3 mullions. More than 3 mullions (grid): check OBE.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 13, sell_per_sf_polished: 13, repair_labor_per_lite: 30 }
+  },
+  {
+    id: 'bgc_ig_low_e_mullions',
+    name: 'BGC — Low-E IG with Mullions (up to 3)',
+    description: 'Low-E insulated glass with up to 3 mullions. $14/sqft.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 0,
+    performance_notes: 'Shop pricing: $14/sqft with up to 3 mullions. More than 3 mullions (grid): check OBE.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'residential_window'],
+    bgc_pricing: { method: 'flat_rate', sell_per_sf: 14, sell_per_sf_polished: 14, repair_labor_per_lite: 30 }
+  },
+  {
+    id: 'bgc_heavy_3_8',
+    name: 'BGC — 3/8" Heavy Glass (Cost-Plus)',
+    description: 'Heavy glass from Oldcastle (OBE). Cost-plus: $7.78/sqft + $0.15/inch edging ×1.13 OBE FSC ×2.0 markup.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 1,
+    performance_notes: 'Cost-plus quoting per BGC price sheet. Markup 2.0 standard (1.85 floor if customer pushes back). Shapes via Bel Pre add 1.30–1.35 shape charge.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'interior_partition', 'storefront'],
+    bgc_pricing: { method: 'cost_plus', obe_cost_per_sf: 7.78, edge_cost_per_inch: 0.15 }
+  },
+  {
+    id: 'bgc_heavy_1_2',
+    name: 'BGC — 1/2" Heavy Glass (Cost-Plus)',
+    description: 'Heavy glass from Oldcastle (OBE). Cost-plus: $8.35/sqft + $0.17/inch edging ×1.13 OBE FSC ×2.0 markup.',
+    cost_multiplier: 1.00,
+    lead_time_impact_weeks: 1,
+    performance_notes: 'Cost-plus quoting per BGC price sheet. Markup 2.0 standard (1.85 floor). 3/4" heavy glass also cost-plus — get OBE cost at order time.',
+    source_ids: ['src-bgc-pricing-doc'],
+    applicable_work_types: ['decorative_glass', 'interior_partition', 'storefront'],
+    bgc_pricing: { method: 'cost_plus', obe_cost_per_sf: 8.35, edge_cost_per_inch: 0.17 }
+  },
   {
     id: 'acoustic_laminated',
     name: 'Acoustic Laminated Glass',

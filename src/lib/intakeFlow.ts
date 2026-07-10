@@ -16,10 +16,31 @@ const PROJECT_TYPE_MAP: Record<string, string> = {
   '6': 'fire_rated',
   '7': 'unknown',
   '8': 'unknown',
+  // Retail/shop categories — listed BEFORE the generic commercial keywords
+  // because mapToGlazingCategory returns the first substring match.
+  'storm window':   'residential_window',
+  'window repair':  'residential_window',
+  'glass repair':   'residential_window',
+  'broken window':  'residential_window',
+  'patio door':     'residential_window',
+  'sliding door':   'residential_window',
+  'insulated glass':'residential_window',
+  shower:           'decorative_glass',
+  mirror:           'decorative_glass',
+  'table top':      'decorative_glass',
+  tabletop:         'decorative_glass',
+  shelf:            'decorative_glass',
+  shelves:          'decorative_glass',
+  stained:          'decorative_glass',
+  patterned:        'decorative_glass',
+  plexiglas:        'decorative_glass',
+  lexan:            'decorative_glass',
+  screen:           'decorative_glass',
+  home:             'residential_window',
+  house:            'residential_window',
   storefront:   'storefront',
   entrance:     'storefront',
   door:         'storefront',
-  window:       'storefront',
   office:       'stick_curtain_wall',
   commercial:   'stick_curtain_wall',
   curtain:      'unitized_curtain_wall',
@@ -32,16 +53,22 @@ const PROJECT_TYPE_MAP: Record<string, string> = {
   school:       'fire_rated',
   hospital:     'fire_rated',
   institutional:'fire_rated',
-  repair:       'storefront',
-  replacement:  'storefront',
+  repair:       'residential_window',
+  replacement:  'residential_window',
   skylight:     'skylight',
   railing:      'glass_railing',
+  // Weak generic — last so specific phrases above win first
+  window:       'storefront',
 };
 
 export function mapToGlazingCategory(raw: string): string {
-  const lower = raw.toLowerCase();
+  const lower = raw.toLowerCase().trim();
+  // Exact match first — covers SMS menu replies like "1"
+  if (PROJECT_TYPE_MAP[lower]) return PROJECT_TYPE_MAP[lower];
+  // Substring pass skips single-char (menu digit) keys so an address like
+  // "14th street" can't accidentally match '1'
   for (const [keyword, category] of Object.entries(PROJECT_TYPE_MAP)) {
-    if (lower.includes(keyword)) return category;
+    if (keyword.length > 1 && lower.includes(keyword)) return category;
   }
   return 'unknown';
 }
@@ -65,6 +92,7 @@ export function scoreLead(collected: Record<string, unknown>): LeadScore {
   if (['unitized_curtain_wall', 'stick_curtain_wall'].includes(cat)) score += 40;
   else if (['window_wall', 'fire_rated', 'skylight', 'glass_railing'].includes(cat)) score += 25;
   else if (cat === 'storefront') score += 15;
+  else if (['residential_window', 'decorative_glass'].includes(cat)) score += 5; // retail/shop work — real but small-ticket
 
   // Size signals
   if (/\d{4,}/.test(size) || /\d+\s*(floor|stor)/i.test(size)) score += 30;

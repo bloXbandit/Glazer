@@ -9,32 +9,45 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { upsertClient } from '@/lib/db';
+import { upsertClient, createSession, updateSession, logMessage } from '@/lib/db';
 import { mapToGlazingCategory, scoreLead } from '@/lib/intakeFlow';
 import { sendLeadSummaryEmail } from '@/lib/emailDispatch';
+import { normalizePhone } from '@/lib/signalwire';
+
+// Field names SignalWire uses for the caller number across payload variants
+const PHONE_KEYS = [
+  'caller_id_number', 'caller_id_num', 'from', 'From',
+  'callerIdNumber', 'caller_number', 'callerNumber', 'from_number',
+];
+// Nested objects that may carry call metadata, by payload variant
+const PHONE_CONTAINERS = ['data', 'call', 'call_info', 'channel_data', 'vars', 'call_data'];
+
+function pickPhone(obj: Record<string, unknown> | undefined): string {
+  if (!obj) return '';
+  for (const key of PHONE_KEYS) {
+    const v = obj[key];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return '';
+}
 
 function extractPhone(body: Record<string, unknown>): string {
   // Direct fields
-  for (const key of ['caller_id_number', 'from', 'From', 'callerIdNumber', 'caller_number', 'callerNumber']) {
-    const v = body[key];
-    if (typeof v === 'string' && v) return v;
-  }
-  // Nested in data
-  const data = body.data as Record<string, unknown> | undefined;
-  if (data) {
-    for (const key of ['caller_id_number', 'from', 'From']) {
-      const v = data[key];
-      if (typeof v === 'string' && v) return v;
+  const direct = pickPhone(body);
+  if (direct) return direct;
+  // Known nested containers (SignalWire varies by SWML version)
+  for (const container of PHONE_CONTAINERS) {
+    const nested = body[container];
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+      const v = pickPhone(nested as Record<string, unknown>);
+      if (v) return v;
     }
   }
   // Try call_log first entry metadata
   const callLog = body.call_log as Array<Record<string, unknown>> | undefined;
   if (callLog && callLog.length > 0) {
-    const first = callLog[0];
-    for (const key of ['from', 'From', 'caller_id_number']) {
-      const v = first[key];
-      if (typeof v === 'string' && v) return v;
-    }
+    const v = pickPhone(callLog[0]);
+    if (v) return v;
   }
   return '';
 }
@@ -109,7 +122,8 @@ export async function POST(req: NextRequest) {
   console.log('[voice/summary] Received payload keys:', Object.keys(body).join(', '));
 
   // ── Extract caller phone ───────────────────────────────────
-  const callerPhone = extractPhone(body);
+  const rawPhone = extractPhone(body);
+  const callerPhone = rawPhone ? normalizePhone(rawPhone) : '';
 
   if (!callerPhone) {
     console.warn('[voice/summary] No caller phone in payload — record not created');
@@ -149,6 +163,28 @@ export async function POST(req: NextRequest) {
     lead_score_label: label,
     contact_type:     'voice',
   });
+
+  // ── Persist call transcript to CRM conversations ───────────
+  // Makes the Grace call visible on the client card, same as SMS threads.
+  try {
+    const callLog = body.call_log as Array<Record<string, unknown>> | undefined;
+    if (callLog && callLog.length > 0) {
+      const session = createSession(callerPhone, 'voice');
+      let logged = 0;
+      for (const entry of callLog.slice(0, 100)) {
+        const role = entry.role;
+        const content = typeof entry.content === 'string' ? entry.content.trim() : '';
+        if (!content || (role !== 'user' && role !== 'assistant')) continue;
+        logMessage(session.id, role === 'user' ? 'inbound' : 'outbound', content, client.id);
+        logged++;
+      }
+      updateSession(callerPhone, { status: 'completed', client_id: client.id });
+      console.log(`[voice/summary] Transcript logged: ${logged} turns → session ${session.id}`);
+    }
+  } catch (err) {
+    // Transcript is best-effort — never lose the lead over logging
+    console.error('[voice/summary] Transcript logging failed:', err);
+  }
 
   sendLeadSummaryEmail(client).catch(err =>
     console.error('[voice/summary] Email dispatch failed:', err)

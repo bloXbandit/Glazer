@@ -3,7 +3,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getClient, updateClientStatus, getClientConversations, getDb } from '@/lib/db';
+import { getClient, updateClientStatus, getClientConversations, listShopQuotesByClient, getDb } from '@/lib/db';
 
 export async function GET(
   _req: NextRequest,
@@ -19,7 +19,14 @@ export async function GET(
     .prepare('SELECT * FROM intake_sessions WHERE client_id = ? ORDER BY started_at DESC LIMIT 1')
     .get(params.id) as Record<string, unknown> | undefined;
 
-  return NextResponse.json({ client, conversations, session: session ?? null });
+  const quotes = listShopQuotesByClient(params.id).map(q => ({
+    id: q.id,
+    glass_name: q.glass_name,
+    total: q.total,
+    created_at: q.created_at,
+  }));
+
+  return NextResponse.json({ client, conversations, session: session ?? null, quotes });
 }
 
 export async function PATCH(
