@@ -349,6 +349,11 @@ input, textarea { caret-color: #FF6B6B; }
   .neo-pop, .neo-slide-in { animation: none; }
 }
 
+/* ── Mobile-only: 16px inputs stop iOS Safari's auto-zoom on focus ── */
+@media (max-width: 767px) {
+  .neo-input, .neo-select { font-size: 16px; }
+}
+
 /* ── Custom scrollbar — chunky, on-brand ── */
 ::-webkit-scrollbar        { width:10px; height:10px; }
 ::-webkit-scrollbar-track  { background:#FFFDF5; border-left:2px solid #000; }

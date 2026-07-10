@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Calculator, Building, FileText, Phone, Scissors } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calculator, Building, FileText, Phone, Scissors, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import type { EstimatePacket, EstimateInput, ProjectType, BuildingType, WorkCondition, AccessCondition, EstimateMode, LiveDataFactor } from '@/types';
 import { runEstimate } from '@/lib/estimateEngine';
@@ -94,6 +94,7 @@ export default function HomePage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [liveFactors, setLiveFactors] = useState<LiveDataFactor[]>([]);
   const [liveDataStatus, setLiveDataStatus] = useState<'idle' | 'loading' | 'fresh' | 'error'>('idle');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const workTypes = syncRepo.getWorkTypes();
 
@@ -305,8 +306,66 @@ export default function HomePage() {
                 <span className="border-2 border-black px-2 py-1 bg-[#FF6B6B]">Offline</span>
               )}
             </div>
+
+            {/* Hamburger — mobile only, desktop keeps the inline links */}
+            <button
+              onClick={() => setMobileNavOpen(o => !o)}
+              aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+              className="md:hidden flex items-center justify-center w-9 h-9 border-2 border-black bg-[#FFD93D] text-black"
+              style={{ boxShadow: '2px 2px 0 #000' }}
+            >
+              {mobileNavOpen ? <X size={16} strokeWidth={3} /> : <Menu size={16} strokeWidth={3} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile nav sheet — slides under the sticky header */}
+        {mobileNavOpen && (
+          <nav className="md:hidden neo-slide-in border-t-4 border-black bg-[#FFFDF5]">
+            <div className="px-4 py-3 space-y-2">
+              {[
+                { href: '/shop',        icon: <Scissors size={16} strokeWidth={3} />, label: 'Shop Quote',  note: 'Counter pricing — BGC sheet', bg: '#FFD93D' },
+                { href: '/procurement', icon: <FileText size={16} strokeWidth={3} />, label: 'Procurement', note: 'Intel library & ingest',       bg: '#FFFFFF' },
+                { href: '/clients',     icon: <Phone size={16} strokeWidth={3} />,    label: 'Clients',     note: 'CRM — leads & quotes',         bg: '#FFFFFF' },
+              ].map(item => (
+                <Link key={item.href} href={item.href} onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-3 border-3 border-black px-3 py-3"
+                  style={{ border: '3px solid #000', background: item.bg, boxShadow: '3px 3px 0 #000' }}>
+                  <span className="flex items-center justify-center w-8 h-8 border-2 border-black bg-black text-[#FFD93D]">
+                    {item.icon}
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-sm font-black uppercase tracking-wide">{item.label}</span>
+                    <span className="block text-[10px] font-bold text-black/50 uppercase tracking-wide">{item.note}</span>
+                  </span>
+                  <ChevronRight size={14} strokeWidth={3} />
+                </Link>
+              ))}
+
+              {/* Live data — same action as the desktop header button */}
+              <button
+                onClick={() => { fetchLiveData(); setMobileNavOpen(false); }}
+                disabled={liveDataStatus === 'loading'}
+                className="w-full flex items-center gap-3 border-3 border-black px-3 py-3 text-left"
+                style={{
+                  border: '3px solid #000',
+                  background: liveDataStatus === 'fresh' ? '#FFD93D' : liveDataStatus === 'error' ? '#FF6B6B' : '#C4B5FD',
+                  boxShadow: '3px 3px 0 #000',
+                }}>
+                <span className="flex items-center justify-center w-8 h-8 border-2 border-black bg-black text-[#FFD93D] font-black">⚡</span>
+                <span className="flex-1">
+                  <span className="block text-sm font-black uppercase tracking-wide">
+                    {liveDataStatus === 'fresh' ? `${liveFactors.length} Live Factors Active`
+                      : liveDataStatus === 'loading' ? 'Loading Live Data…'
+                      : liveDataStatus === 'error' ? 'Live Data Offline — Retry'
+                      : 'Fetch Live Data'}
+                  </span>
+                  <span className="block text-[10px] font-bold text-black/50 uppercase tracking-wide">BLS PPI + SAM.gov calibration</span>
+                </span>
+              </button>
+            </div>
+          </nav>
+        )}
       </header>
 
       {/* ── Main ───────────────────────────────────────────────── */}
